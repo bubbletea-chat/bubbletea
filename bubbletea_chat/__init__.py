@@ -9,5 +9,5 @@ from .server import run_server
 from .llm import LLM
 from .schemas import ImageInput, BotConfig
 
-__version__ = "0.3.0"
+__version__ = "0.4.1"
 __all__ = ["Text", "Image", "Markdown", "Done", "chatbot", "config", "run_server", "LLM", "ImageInput", "BotConfig"]
