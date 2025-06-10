@@ -3,7 +3,7 @@ Streaming bot example with mixed content
 """
 
 import asyncio
-import bubbletea as bt
+import bubbletea_chat as bt
 
 @bt.chatbot
 async def streaming_bot(message: str):

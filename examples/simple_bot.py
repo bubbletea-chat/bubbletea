@@ -2,7 +2,7 @@
 Simple echo bot example for BubbleTea
 """
 
-import bubbletea as bt
+import bubbletea_chat as bt
 
 @bt.chatbot
 def echo_bot(message: str):

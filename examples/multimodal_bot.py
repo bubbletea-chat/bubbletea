@@ -2,7 +2,7 @@
 Multi-modal bot example showing various component types (without LLM)
 """
 
-import bubbletea as bt
+import bubbletea_chat as bt
 import random
 
 # Sample data for the bot
@@ -105,7 +105,7 @@ Rich formatted text with:
 Here's how you can create your own bot:
 
 ```python
-import bubbletea as bt
+import bubbletea_chat as bt
 
 @bt.chatbot
 def my_bot(message: str):

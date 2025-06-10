@@ -1,8 +1,8 @@
-# BubbleTea Python SDK (Minimal)
+# BubbleTea Python SDK
 
 Build AI chatbots for the BubbleTea platform with simple Python functions.
 
-**Note**: This is the minimal version without LLM and CLI support. For the full-featured version with AI capabilities, see the complete package.
+**Now with LiteLLM support!** 🎉 Easily integrate with OpenAI, Anthropic Claude, Google Gemini, and 100+ other LLMs.
 
 ## Installation
 
@@ -35,6 +35,30 @@ python my_bot.py
 
 ## Features
 
+### 🤖 LiteLLM Integration
+
+BubbleTea now includes built-in support for LiteLLM, allowing you to easily use any LLM provider. We use LiteLLM on the backend, which supports 100+ LLM models from various providers.
+
+```python
+from bubbletea_chat import LLM
+
+# Use any model supported by LiteLLM
+llm = LLM(model="gpt-4")
+llm = LLM(model="claude-3-sonnet-20240229")
+llm = LLM(model="gemini/gemini-pro")
+
+# Simple completion
+response = await llm.acomplete("Hello, how are you?")
+
+# Streaming
+async for chunk in llm.stream("Tell me a story"):
+    yield bt.Text(chunk)
+```
+
+**📚 Supported Models**: Check out the full list of supported models and providers at [LiteLLM Providers Documentation](https://docs.litellm.ai/docs/providers)
+
+**💡 DIY Alternative**: You can also implement your own LLM connections using the LiteLLM library directly in your bots if you need more control over the integration.
+
 ### 📦 Components
 
 BubbleTea supports rich components for building engaging chatbot experiences:
@@ -62,6 +86,48 @@ async def streaming_bot(message: str):
 ```
 
 ## Examples
+
+### AI-Powered Bots with LiteLLM
+
+#### OpenAI GPT Bot
+
+```python
+import bubbletea_chat as bt
+from bubbletea_chat import LLM
+
+@bt.chatbot
+async def gpt_assistant(message: str):
+    # Make sure to set OPENAI_API_KEY environment variable
+    llm = LLM(model="gpt-4")
+    
+    # Stream the response
+    async for chunk in llm.stream(message):
+        yield bt.Text(chunk)
+```
+
+#### Claude Bot
+
+```python
+@bt.chatbot
+async def claude_bot(message: str):
+    # Set ANTHROPIC_API_KEY environment variable
+    llm = LLM(model="claude-3-sonnet-20240229")
+    
+    response = await llm.acomplete(message)
+    yield bt.Text(response)
+```
+
+#### Gemini Bot
+
+```python
+@bt.chatbot
+async def gemini_bot(message: str):
+    # Set GEMINI_API_KEY environment variable
+    llm = LLM(model="gemini/gemini-pro")
+    
+    async for chunk in llm.stream(message):
+        yield bt.Text(chunk)
+```
 
 ### Simple Echo Bot
 
@@ -132,9 +198,71 @@ async def streaming_bot(message: str):
 - `bt.Image(url: str, alt: str = None)` - Image component
 - `bt.Markdown(content: str)` - Markdown formatted text
 
+### LLM Class
+
+- `LLM(model: str, **kwargs)` - Initialize an LLM client
+  - `model`: Any model supported by LiteLLM (e.g., "gpt-4", "claude-3-sonnet-20240229")
+  - `**kwargs`: Additional parameters (temperature, max_tokens, etc.)
+
+#### Methods:
+- `complete(prompt: str, **kwargs) -> str` - Get a completion
+- `acomplete(prompt: str, **kwargs) -> str` - Async completion
+- `stream(prompt: str, **kwargs) -> AsyncGenerator[str, None]` - Stream a completion
+- `with_messages(messages: List[Dict], **kwargs) -> str` - Use full message history
+- `astream_with_messages(messages: List[Dict], **kwargs) -> AsyncGenerator[str, None]` - Stream with messages
+
 ### Server
 
 - `bt.run_server(chatbot, port=8000, host="0.0.0.0")` - Run a chatbot server
+
+## Environment Variables
+
+To use different LLM providers, set the appropriate API keys:
+
+```bash
+# OpenAI
+export OPENAI_API_KEY=your-openai-api-key
+
+# Anthropic Claude
+export ANTHROPIC_API_KEY=your-anthropic-api-key
+
+# Google Gemini
+export GEMINI_API_KEY=your-gemini-api-key
+
+# Or use a .env file with python-dotenv
+```
+
+For more providers and configuration options, see the [LiteLLM documentation](https://docs.litellm.ai/docs/providers).
+
+## Custom LLM Integration
+
+While BubbleTea provides the `LLM` class for convenience, you can also use LiteLLM directly in your bots for more control:
+
+```python
+import bubbletea_chat as bt
+from litellm import acompletion
+
+@bt.chatbot
+async def custom_llm_bot(message: str):
+    # Direct LiteLLM usage
+    response = await acompletion(
+        model="gpt-4",
+        messages=[{"role": "user", "content": message}],
+        temperature=0.7,
+        # Add any custom parameters
+        api_base="https://your-custom-endpoint.com",  # Custom endpoints
+        custom_llm_provider="openai",  # Custom providers
+    )
+    
+    yield bt.Text(response.choices[0].message.content)
+```
+
+This approach gives you access to:
+- Custom API endpoints
+- Advanced parameters
+- Direct response handling
+- Custom error handling
+- Any LiteLLM feature
 
 ## Testing Your Bot
 

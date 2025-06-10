@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bubbletea-chat"
-version = "0.1.1"
-description = "A Python package for building AI chatbots for BubbleTea platform"
+version = "0.2.0"
+description = "A Python package for building AI chatbots with LiteLLM support for BubbleTea platform"
 readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
@@ -28,6 +28,7 @@ dependencies = [
     "fastapi>=0.100.0",
     "uvicorn>=0.23.0",
     "pydantic>=2.0.0",
+    "litellm>=1.0.0",
 ]
 
 [project.urls]
