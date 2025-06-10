@@ -1,0 +1,57 @@
+# Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# pip and uv artifacts
+*.egg-info/
+.eggs/
+.installed.cfg
+*.egg
+pip-wheel-metadata/
+*.whl
+
+# Pytest
+.cache/
+.pytest_cache/
+coverage.*
+htmlcov/
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+
+# mypy, ruff, pylint, black
+.mypy_cache/
+ruff_cache/
+.dmypy.json
+.pyre/
+.pytype/
+
+# Pre-commit
+.pre-commit-config.yaml~
+.pre-commit-hooks.yaml~
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# macOS
+.DS_Store
+
+# pyproject.toml build artifacts
+build/
+dist/
+*.lock
+.ruff_cache/
+node_modules
+.serverless
+
+# Secret files
+.env

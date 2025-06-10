@@ -7,7 +7,7 @@ Build AI chatbots for the BubbleTea platform with simple Python functions.
 ## Installation
 
 ```bash
-pip install bubbletea
+pip install bubbletea-chat
 ```
 
 ## Quick Start
@@ -15,7 +15,7 @@ pip install bubbletea
 Create a simple chatbot in `my_bot.py`:
 
 ```python
-import bubbletea as bt
+import bubbletea_chat as bt
 
 @bt.chatbot
 def my_chatbot(message: str):
@@ -66,7 +66,7 @@ async def streaming_bot(message: str):
 ### Simple Echo Bot
 
 ```python
-import bubbletea as bt
+import bubbletea_chat as bt
 
 @bt.chatbot
 def echo_bot(message: str):
@@ -76,7 +76,7 @@ def echo_bot(message: str):
 ### Multi-Modal Bot
 
 ```python
-import bubbletea as bt
+import bubbletea_chat as bt
 
 @bt.chatbot
 def multimodal_bot(message: str):
@@ -101,7 +101,7 @@ def multimodal_bot(message: str):
 ### Streaming Bot
 
 ```python
-import bubbletea as bt
+import bubbletea_chat as bt
 import asyncio
 
 @bt.chatbot
