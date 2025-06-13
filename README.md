@@ -4,6 +4,8 @@ Build AI chatbots for the BubbleTea platform with simple Python functions.
 
 **Now with LiteLLM support!** 🎉 Easily integrate with OpenAI, Anthropic Claude, Google Gemini, and 100+ other LLMs.
 
+**NEW: Vision & Image Generation!** 📸🎨 Build multimodal bots that can analyze images and generate new ones using AI.
+
 ## Installation
 
 ```bash
@@ -33,6 +35,8 @@ Run it locally:
 python my_bot.py
 ```
 
+This will start a server at `http://localhost:8000` with your chatbot available at the `/chat` endpoint.
+
 ## Features
 
 ### 🤖 LiteLLM Integration
@@ -58,6 +62,57 @@ async for chunk in llm.stream("Tell me a story"):
 **📚 Supported Models**: Check out the full list of supported models and providers at [LiteLLM Providers Documentation](https://docs.litellm.ai/docs/providers)
 
 **💡 DIY Alternative**: You can also implement your own LLM connections using the LiteLLM library directly in your bots if you need more control over the integration.
+
+### 📸 Vision/Image Analysis
+
+BubbleTea supports multimodal interactions! Your bots can receive and analyze images:
+
+```python
+from bubbletea_chat import chatbot, Text, LLM, ImageInput
+
+@chatbot
+async def vision_bot(prompt: str, images: list = None):
+    """A bot that can see and analyze images"""
+    if images:
+        llm = LLM(model="gpt-4-vision-preview")
+        response = await llm.acomplete_with_images(prompt, images)
+        yield Text(response)
+    else:
+        yield Text("Send me an image to analyze!")
+```
+
+**Supported Image Formats:**
+- URL images: Direct links to images
+- Base64 encoded images: For local/uploaded images
+- Multiple images: Analyze multiple images at once
+
+**Compatible Vision Models:**
+- OpenAI: GPT-4 Vision (`gpt-4-vision-preview`)
+- Anthropic: Claude 3 models (Opus, Sonnet, Haiku)
+- Google: Gemini Pro Vision (`gemini/gemini-pro-vision`)
+- And more vision-enabled models via LiteLLM
+
+### 🎨 Image Generation
+
+Generate images from text descriptions using AI models:
+
+```python
+from bubbletea_chat import chatbot, Image, LLM
+
+@chatbot
+async def art_bot(prompt: str):
+    """Generate images from descriptions"""
+    llm = LLM(model="dall-e-3")  # or any image generation model
+    
+    # Generate an image
+    image_url = await llm.agenerate_image(prompt)
+    yield Image(image_url)
+```
+
+**Image Generation Features:**
+- Text-to-image generation
+- Support for DALL-E, Stable Diffusion, and other models
+- Customizable parameters (size, quality, style)
 
 ### 📦 Components
 
@@ -129,6 +184,81 @@ async def gemini_bot(message: str):
         yield bt.Text(chunk)
 ```
 
+### Vision-Enabled Bot
+
+Build bots that can analyze images using multimodal LLMs:
+
+```python
+from bubbletea_chat import chatbot, Text, Markdown, LLM, ImageInput
+
+@chatbot
+async def vision_bot(prompt: str, images: list = None):
+    """
+    A vision-enabled bot that can analyze images
+    """
+    llm = LLM(model="gpt-4-vision-preview", max_tokens=1000)
+    
+    if images:
+        yield Text("I can see you've shared some images. Let me analyze them...")
+        response = await llm.acomplete_with_images(prompt, images)
+        yield Markdown(response)
+    else:
+        yield Markdown("""
+## 📸 Vision Bot
+
+I can analyze images! Try sending me:
+- Screenshots to explain
+- Photos to describe
+- Diagrams to interpret
+- Art to analyze
+
+Just upload an image along with your question!
+
+**Supported formats**: JPEG, PNG, GIF, WebP
+        """)
+```
+
+**Key Features:**
+- Accepts images along with text prompts
+- Supports both URL and base64-encoded images
+- Works with multiple images at once
+- Compatible with various vision models
+
+### Image Generation Bot
+
+Create images from text descriptions:
+
+```python
+from bubbletea_chat import chatbot, Text, Markdown, LLM, Image
+
+@chatbot
+async def image_generator(prompt: str):
+    """
+    Generate images from text descriptions
+    """
+    llm = LLM(model="dall-e-3")  # Default image generation model
+    
+    if prompt:
+        yield Text(f"🎨 Creating: {prompt}")
+        # Generate image from the text prompt
+        image_url = await llm.agenerate_image(prompt)
+        yield Image(image_url)
+        yield Text("✨ Your image is ready!")
+    else:
+        yield Markdown("""
+## 🎨 AI Image Generator
+
+I can create images from your text prompts!
+
+Try prompts like:
+- *"A futuristic cityscape at sunset"*
+- *"A cute robot playing guitar in a forest"*
+- *"An ancient map with fantasy landmarks"*
+
+👉 Just type your description and I'll generate an image for you!
+        """)
+```
+
 ### Simple Echo Bot
 
 ```python
@@ -192,6 +322,14 @@ async def streaming_bot(message: str):
 - `@bt.chatbot(name="custom-name")` - Set a custom bot name
 - `@bt.chatbot(stream=False)` - Force non-streaming mode
 
+**Image Support**: Functions can accept an optional `images` parameter:
+```python
+@bt.chatbot
+async def my_bot(message: str, images: list = None):
+    # images will contain ImageInput objects if provided
+    pass
+```
+
 ### Components
 
 - `bt.Text(content: str)` - Plain text message
@@ -204,16 +342,44 @@ async def streaming_bot(message: str):
   - `model`: Any model supported by LiteLLM (e.g., "gpt-4", "claude-3-sonnet-20240229")
   - `**kwargs`: Additional parameters (temperature, max_tokens, etc.)
 
-#### Methods:
+#### Text Generation Methods:
 - `complete(prompt: str, **kwargs) -> str` - Get a completion
 - `acomplete(prompt: str, **kwargs) -> str` - Async completion
 - `stream(prompt: str, **kwargs) -> AsyncGenerator[str, None]` - Stream a completion
 - `with_messages(messages: List[Dict], **kwargs) -> str` - Use full message history
 - `astream_with_messages(messages: List[Dict], **kwargs) -> AsyncGenerator[str, None]` - Stream with messages
 
+#### Vision/Image Analysis Methods:
+- `complete_with_images(prompt: str, images: List[ImageInput], **kwargs) -> str` - Completion with images
+- `acomplete_with_images(prompt: str, images: List[ImageInput], **kwargs) -> str` - Async with images
+- `stream_with_images(prompt: str, images: List[ImageInput], **kwargs) -> AsyncGenerator` - Stream with images
+
+#### Image Generation Methods:
+- `generate_image(prompt: str, **kwargs) -> str` - Generate image (sync), returns URL
+- `agenerate_image(prompt: str, **kwargs) -> str` - Generate image (async), returns URL
+
+### ImageInput Class
+
+Represents an image input that can be either a URL or base64 encoded:
+```python
+from bubbletea_chat import ImageInput
+
+# URL image
+ImageInput(url="https://example.com/image.jpg")
+
+# Base64 image
+ImageInput(
+    base64="iVBORw0KGgoAAAANS...",
+    mime_type="image/jpeg"  # Optional
+)
+```
+
 ### Server
 
 - `bt.run_server(chatbot, port=8000, host="0.0.0.0")` - Run a chatbot server
+  - Automatically creates a `/chat` endpoint for your bot
+  - The `/chat` endpoint accepts POST requests with chat messages
+  - Supports both streaming and non-streaming responses
 
 ## Environment Variables
 
@@ -272,12 +438,33 @@ Start your bot:
 python my_bot.py
 ```
 
+Your bot will automatically create a `/chat` endpoint that accepts POST requests. This is the standard endpoint for all BubbleTea chatbots.
+
 Test with curl:
 
 ```bash
+# Text only
 curl -X POST "http://localhost:8000/chat" \
   -H "Content-Type: application/json" \
   -d '{"type": "user", "message": "Hello bot!"}'
+
+# With image URL
+curl -X POST "http://localhost:8000/chat" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "user",
+    "message": "What is in this image?",
+    "images": [{"url": "https://example.com/image.jpg"}]
+  }'
+
+# With base64 image
+curl -X POST "http://localhost:8000/chat" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "user",
+    "message": "Describe this",
+    "images": [{"base64": "iVBORw0KGgoAAAANS...", "mime_type": "image/png"}]
+  }'
 ```
 
 ## Contributing
