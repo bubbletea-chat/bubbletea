@@ -184,6 +184,98 @@ async def streaming_bot(message: str):
     yield bt.Markdown("## Analysis Complete!")
 ```
 
+### Vision-Enabled Bot
+
+The `vision_bot` demonstrates how to build a bot that can analyze images using multimodal LLMs like GPT-4 Vision, Claude 3, and Gemini. It supports both text prompts and image inputs.
+
+#### Key Features:
+- Accepts images along with text prompts.
+- Uses multimodal models for image analysis.
+- Handles both URL and base64-encoded images.
+
+#### Example Code:
+
+```python
+from bubbletea_chat import chatbot, Text, Markdown, LLM, ImageInput
+
+@chatbot
+async def vision_bot(prompt: str, images: list = None):
+    """
+    A vision-enabled bot that can analyze images.
+    """
+    llm = LLM(model="gpt-4.1-mini", max_tokens=1000)
+    
+    if images:
+        yield Text("I can see you've shared some images. Let me analyze them...")
+        response = await llm.acomplete_with_images(prompt, images)
+        yield Markdown(response)
+    else:
+        yield Markdown("""
+        ## 📸 Vision Bot
+
+        I can analyze images! Try sending me:
+        - Screenshots to explain
+        - Photos to describe
+        - Diagrams to interpret
+        - Art to analyze
+
+        Just upload an image along with your question!
+
+        **Supported formats**: JPEG, PNG, GIF, WebP
+                """)
+```
+
+
+This bot is a great starting point for building multimodal AI applications.
+
+### Image Generation Bot
+
+The `image_generation` bot demonstrates how to generate or analyze images dynamically using multimodal models like GPT-4 Vision.
+
+#### Key Features:
+- Accepts text prompts and images.
+- Uses multimodal models (e.g., GPT-4 Vision, Claude 3, Gemini).
+- Handles both URL and base64-encoded images.
+
+#### Example Code:
+
+```python
+from bubbletea_chat import chatbot, Text, Markdown, LLM, Image
+
+@chatbot
+async def image_generation(prompt: str):
+    """
+    A vision-enabled bot that generates images from text prompts.
+
+    This bot demonstrates:
+    - Generating images from descriptive text
+    - Using multimodal models (GPT-4V, Claude 3, Gemini)
+    """
+    # Use GPT-4 Vision by default
+    llm = LLM(model="gpt-4.1-mini")
+    if prompt:
+        # Generate image from the text prompt
+        response = llm.generate_image(prompt)
+        yield Image(response)
+    else:
+        # No prompt provided - show usage instructions
+        yield Markdown("""
+            ## 🎨 AI Image Generator
+
+            I can create images from your text prompts using powerful AI models!
+
+            Try prompts like:
+            - *"A futuristic cityscape at sunset"*
+            - *"A cute robot playing guitar in a forest"*
+            - *"An ancient map with fantasy landmarks"*
+
+            👉 Just type your description and I'll generate an image for you!
+
+            **Note:** No need to upload an image — just provide your idea as text.
+        """)
+
+```
+
 ## API Reference
 
 ### Decorators

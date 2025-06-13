@@ -3,7 +3,7 @@ Example BubbleTea bot with vision/image support using multimodal LLMs
 """
 
 import os
-from bubbletea_chat import chatbot, Text, Markdown, LLM, ImageInput
+from bubbletea_chat import chatbot, Text, Markdown, LLM, ImageInput, Image
 
 
 @chatbot
@@ -191,6 +191,38 @@ async def base64_example_bot(prompt: str, images: list = None):
     )
     
     yield Markdown(response)
+
+
+async def image_generation(prompt: str):
+    """
+    A vision-enabled bot that generates images from text prompts.
+
+    This bot demonstrates:
+    - Generating images from descriptive text
+    - Using multimodal models (GPT-4V, Claude 3, Gemini)
+    """
+    # Use GPT-4 Vision by default
+    llm = LLM(model="gpt-4.1-mini")
+    if prompt:
+        # Generate image from the text prompt
+        response = llm.generate_image(prompt)
+        yield Image(response)
+    else:
+        # No prompt provided - show usage instructions
+        yield Markdown("""
+            ## 🎨 AI Image Generator
+
+            I can create images from your text prompts using powerful AI models!
+
+            Try prompts like:
+            - *"A futuristic cityscape at sunset"*
+            - *"A cute robot playing guitar in a forest"*
+            - *"An ancient map with fantasy landmarks"*
+
+            👉 Just type your description and I'll generate an image for you!
+
+            **Note:** No need to upload an image — just provide your idea as text.
+        """)
 
 
 if __name__ == "__main__":

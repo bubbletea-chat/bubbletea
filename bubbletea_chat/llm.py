@@ -4,7 +4,7 @@ LiteLLM integration for easy LLM calls in BubbleTea bots
 
 from typing import List, Dict, Optional, AsyncGenerator, Union
 import litellm
-from litellm import acompletion, completion
+from litellm import acompletion, completion, image_generation, aimage_generation
 from .schemas import ImageInput
 
 
@@ -229,3 +229,20 @@ class LLM:
         async for chunk in response:
             if chunk.choices[0].delta.content:
                 yield chunk.choices[0].delta.content
+
+    async def generate_image(self, prompt: str, **kwargs) -> str:
+        """
+        Generate an image using an image generation model like DALL·E.
+        Returns the image URL.
+        """
+        params = {**self.default_params, **kwargs}
+        response = image_generation(prompt=prompt, **params)
+        return response.data[0].url
+
+    async def agenerate_image(self, prompt: str, **kwargs) -> str:
+        """
+        Async version of generate_image.
+        """
+        params = {**self.default_params, **kwargs}
+        response = await aimage_generation(prompt=prompt, **params)
+        return response.data[0].url
