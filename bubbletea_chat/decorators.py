@@ -8,7 +8,7 @@ from typing import Callable, List, AsyncGenerator, Generator, Union
 from functools import wraps
 
 from .components import Component, Done
-from .schemas import ComponentChatRequest, ComponentChatResponse
+from .schemas import ComponentChatRequest, ComponentChatResponse, ImageInput
 
 
 class ChatbotFunction:
@@ -21,12 +21,24 @@ class ChatbotFunction:
         self.is_generator = inspect.isgeneratorfunction(func) or inspect.isasyncgenfunction(func)
         self.stream = stream if stream is not None else self.is_generator
         
-    async def __call__(self, message: str) -> Union[List[Component], AsyncGenerator[Component, None]]:
+    async def __call__(self, message: str, images: List[ImageInput] = None) -> Union[List[Component], AsyncGenerator[Component, None]]:
         """Execute the chatbot function"""
-        if self.is_async:
-            result = await self.func(message)
+        # Check function signature to determine if it accepts images
+        sig = inspect.signature(self.func)
+        params = list(sig.parameters.keys())
+        
+        if len(params) > 1 and 'images' in params:
+            # Function accepts images parameter
+            if self.is_async:
+                result = await self.func(message, images=images)
+            else:
+                result = self.func(message, images=images)
         else:
-            result = self.func(message)
+            # Backward compatibility: function only accepts message
+            if self.is_async:
+                result = await self.func(message)
+            else:
+                result = self.func(message)
             
         # Handle different return types
         if self.is_generator:
@@ -47,7 +59,7 @@ class ChatbotFunction:
     
     async def handle_request(self, request: ComponentChatRequest):
         """Handle incoming chat request and return appropriate response"""
-        components = await self(request.message)
+        components = await self(request.message, images=request.images)
         
         if self.stream:
             # Return async generator for streaming
