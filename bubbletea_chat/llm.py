@@ -40,13 +40,20 @@ class LLM:
                     "image_url": {"url": img.url}
                 })
             elif img.base64:
-                # Format base64 image with proper data URI
-                mime_type = img.mime_type or "image/jpeg"
-                image_url = f"data:{mime_type};base64,{img.base64}"
-                content_parts.append({
-                    "type": "image_url",
-                    "image_url": {"url": image_url}
-                })
+                if img.base64.startswith("data:"):
+                    # If base64 already starts with 'data:', use it directly
+                    content_parts.append({
+                        "type": "image_url",
+                        "image_url": {"url": img.base64}
+                    })
+                else:
+                    # Format base64 image with proper data URI
+                    mime_type = img.mime_type or "image/jpeg"
+                    image_url = f"data:{mime_type};base64,{img.base64}"
+                    content_parts.append({
+                        "type": "image_url",
+                        "image_url": {"url": image_url}
+                    })
         
         return content_parts
     
