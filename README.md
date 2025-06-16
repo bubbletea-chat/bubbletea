@@ -35,6 +35,8 @@ Run it locally:
 python my_bot.py
 ```
 
+This will start a server at `http://localhost:8000` with your chatbot available at the `/chat` endpoint.
+
 ## Features
 
 ### 🤖 LiteLLM Integration
@@ -375,6 +377,9 @@ ImageInput(
 ### Server
 
 - `bt.run_server(chatbot, port=8000, host="0.0.0.0")` - Run a chatbot server
+  - Automatically creates a `/chat` endpoint for your bot
+  - The `/chat` endpoint accepts POST requests with chat messages
+  - Supports both streaming and non-streaming responses
 
 ## Environment Variables
 
@@ -432,6 +437,8 @@ Start your bot:
 ```bash
 python my_bot.py
 ```
+
+Your bot will automatically create a `/chat` endpoint that accepts POST requests. This is the standard endpoint for all BubbleTea chatbots.
 
 Test with curl:
 
