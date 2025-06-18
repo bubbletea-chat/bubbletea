@@ -24,3 +24,12 @@ class ComponentChatRequest(BaseModel):
 class ComponentChatResponse(BaseModel):
     """Non-streaming response containing list of components"""
     responses: List[Component]
+
+
+class BotConfig(BaseModel):
+    """Configuration for a BubbleTea bot"""
+    name: str = Field(..., description="Name of the bot")
+    url: str = Field(..., description="URL where the bot is hosted")
+    is_streaming: bool = Field(..., description="Whether the bot supports streaming responses")
+    emoji: Optional[str] = Field("🤖", description="Emoji to represent the bot")
+    initial_text: Optional[str] = Field("Hi! How can I help you today?", description="Initial greeting message")
