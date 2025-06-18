@@ -10,7 +10,8 @@ from fastapi.responses import StreamingResponse
 import uvicorn
 
 from .decorators import ChatbotFunction
-from .schemas import ComponentChatRequest, ComponentChatResponse
+from . import decorators
+from .schemas import ComponentChatRequest, ComponentChatResponse, BotConfig
 from .components import Done
 
 
@@ -58,6 +59,28 @@ class BubbleTeaServer:
                 "bot_name": self.chatbot.name,
                 "streaming": self.chatbot.stream
             }
+        
+        # Register config endpoint if decorator was used
+        if decorators._config_function:
+            config_func, config_path = decorators._config_function
+            
+            @self.app.get(config_path, response_model=BotConfig)
+            async def config_endpoint():
+                """Get bot configuration"""
+                # Check if config function is async
+                if asyncio.iscoroutinefunction(config_func):
+                    result = await config_func()
+                else:
+                    result = config_func()
+                
+                # Ensure result is a BotConfig instance
+                if isinstance(result, BotConfig):
+                    return result
+                elif isinstance(result, dict):
+                    return BotConfig(**result)
+                else:
+                    # Try to convert to BotConfig
+                    return result
     
     def run(self, host: str = "0.0.0.0"):
         """Run the server"""
