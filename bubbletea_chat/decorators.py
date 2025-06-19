@@ -4,11 +4,14 @@ Decorators for creating BubbleTea chatbots
 
 import asyncio
 import inspect
-from typing import Callable, List, AsyncGenerator, Generator, Union
+from typing import Callable, List, AsyncGenerator, Generator, Union, Tuple, Optional
 from functools import wraps
 
 from .components import Component, Done
-from .schemas import ComponentChatRequest, ComponentChatResponse, ImageInput
+from .schemas import ComponentChatRequest, ComponentChatResponse, ImageInput, BotConfig
+
+# Module-level registry for config function
+_config_function: Optional[Tuple[Callable, str]] = None
 
 
 class ChatbotFunction:
@@ -98,5 +101,37 @@ def chatbot(name: str = None, stream: bool = None):
     if callable(name):
         func = name
         return ChatbotFunction(func)
+    
+    return decorator
+
+
+def config(path: str = "/config"):
+    """
+    Decorator to define bot configuration endpoint
+    
+    Args:
+        path: Optional path for the config endpoint (defaults to "/config")
+    
+    Example:
+        @config()
+        def get_config():
+            return BotConfig(
+                name="My Bot",
+                url="https://mybot.example.com",
+                is_streaming=True,
+                emoji="🤖",
+                initial_text="Hello! How can I help?"
+            )
+    """
+    def decorator(func: Callable) -> Callable:
+        global _config_function
+        _config_function = (func, path)
+        return func
+    
+    # Allow using @config without parentheses
+    if callable(path):
+        func = path
+        _config_function = (func, "/config")
+        return func
     
     return decorator
