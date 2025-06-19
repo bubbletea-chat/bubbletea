@@ -37,6 +37,55 @@ python my_bot.py
 
 This will start a server at `http://localhost:8000` with your chatbot available at the `/chat` endpoint.
 
+
+### Configuration with `@config` Decorator
+
+BubbleTea provides a `@config` decorator to define and expose bot configurations via a dedicated endpoint. This is useful for setting up bot metadata, such as its name, URL, emoji, and initial greeting.
+
+#### Example: Using the `@config` Decorator
+
+
+```python
+import bubbletea_chat as bt
+
+# Define bot configuration
+@bt.config()
+def get_config():
+    return bt.BotConfig(
+        name="Weather Bot",
+        url="http://localhost:8000",
+        is_streaming=True,
+        emoji="🌤️",
+        initial_text="Hello! I can help you check the weather. Which city would you like to know about?"
+    )
+
+# Define the chatbot
+@bt.chatbot(name="Weather Bot", stream=True)
+def weather_bot(message: str):
+    if "new york" in message.lower():
+        yield bt.Text("🌤️ New York: Partly cloudy, 72°F")
+    else:
+        yield bt.Text("Please specify a city to check the weather.")
+```
+
+When the bot server is running, the configuration can be accessed at the `/config` endpoint. For example:
+
+```bash
+curl http://localhost:8000/config
+```
+
+This will return the bot's configuration as a JSON object.
+
+#### Dynamic Bot Creation Using `/config`
+
+BubbleTea agents can dynamically create new chatbots by utilizing the `/config` endpoint. For example, if you provide a command like:
+
+```bash
+create new bot 'bot-name' with url 'http://example.com'
+```
+
+The agent will automatically fetch the configuration from `http://example.com/config` and create a new chatbot based on the metadata defined in the configuration. This allows for seamless integration and creation of new bots without manual setup.
+
 ## Features
 
 ### 🤖 LiteLLM Integration
