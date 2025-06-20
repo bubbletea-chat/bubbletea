@@ -9,14 +9,14 @@ import bubbletea_chat as bt
 def get_config():
     return bt.BotConfig(
         name="Weather Bot",
-        url="http://localhost:8020",
+        url="http://localhost:8000",
         is_streaming=False,
         emoji="🌤️",
         initial_text="Hello! I can help you check the weather. Which city would you like to know about?"
     )
 
 # Define the chatbot
-@bt.chatbot(name="Weather Bot", stream=True)
+@bt.chatbot(name="Weather Bot", stream=False)
 def weather_bot(message: str):
     # Simple weather bot logic
     message_lower = message.lower()
