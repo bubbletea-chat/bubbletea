@@ -516,6 +516,33 @@ curl -X POST "http://localhost:8000/chat" \
   }'
 ```
 
+## 🌐 CORS Support
+
+BubbleTea includes automatic CORS (Cross-Origin Resource Sharing) support out of the box! This means your bots will work seamlessly with web frontends without any additional configuration.
+
+### Default Behavior
+```python
+# CORS is enabled by default with permissive settings for development
+bt.run_server(my_bot, port=8000)
+```
+
+### Custom CORS Configuration
+```python
+# For production - restrict to specific origins
+bt.run_server(my_bot, port=8000, cors_config={
+    "allow_origins": ["https://bubbletea.app", "https://yourdomain.com"],
+    "allow_credentials": True,
+    "allow_methods": ["GET", "POST"],
+    "allow_headers": ["Content-Type", "Authorization"]
+})
+```
+
+### Disable CORS
+```python
+# Not recommended, but possible
+bt.run_server(my_bot, port=8000, cors=False)
+```
+
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
