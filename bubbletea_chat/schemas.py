@@ -2,7 +2,7 @@
 Request and response schemas for BubbleTea
 """
 
-from typing import List, Literal, Optional, Union
+from typing import List, Literal, Optional, Union, Dict, Any
 from pydantic import BaseModel, Field
 from .components import Component
 
@@ -33,3 +33,5 @@ class BotConfig(BaseModel):
     is_streaming: bool = Field(..., description="Whether the bot supports streaming responses")
     emoji: Optional[str] = Field("🤖", description="Emoji to represent the bot")
     initial_text: Optional[str] = Field("Hi! How can I help you today?", description="Initial greeting message")
+    # CORS configuration (optional)
+    cors_config: Optional[Dict[str, Any]] = Field(None, description="Custom CORS configuration")
