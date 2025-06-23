@@ -27,6 +27,11 @@ def my_chatbot(message: str):
         yield bt.Text("Here's a random image for you!")
     else:
         yield bt.Text(f"You said: {message}")
+
+if __name__ == "__main__":
+    # Run the chatbot server
+    bt.run_server(my_chatbot, port=8000, host="0.0.0.0")
+
 ```
 
 Run it locally:
@@ -424,8 +429,13 @@ ImageInput(
 ```
 
 ### Server
+```
+if __name__ == "__main__":
+    # Run the chatbot server
+    bt.run_server(my_bot, port=8000, host="0.0.0.0")
+```
 
-- `bt.run_server(chatbot, port=8000, host="0.0.0.0")` - Run a chatbot server
+- Runs a chatbot server on port 8000 and binds to host 0.0.0.0
   - Automatically creates a `/chat` endpoint for your bot
   - The `/chat` endpoint accepts POST requests with chat messages
   - Supports both streaming and non-streaming responses
