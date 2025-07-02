@@ -8,11 +8,18 @@ from .decorators import chatbot, config
 from .server import run_server
 from .schemas import ImageInput, BotConfig
 
-try:
-    from .llm import LLM
-    __all__ = ["Text", "Image", "Markdown", "Card", "Cards", "Done", "chatbot", "config", "run_server", "LLM", "ImageInput", "BotConfig"]
-except ImportError:
-    __all__ = ["Text", "Image", "Markdown", "Card", "Cards", "Done", "chatbot", "config", "run_server", "ImageInput", "BotConfig"]
-    raise ImportError(
-        "LiteLLM is not installed. Please install it with `pip install bubbletea[llm]`"
-    )
+__all__ = [
+    "Text", "Image", "Markdown", "Card", "Cards", "Done",
+    "chatbot", "config", "run_server", "ImageInput", "BotConfig", "LLM"
+]
+
+def __getattr__(name):
+    if name == "LLM":
+        try:
+            from .llm import LLM
+            return LLM
+        except ImportError:
+            raise ImportError(
+                "LiteLLM is not installed. Please install it with `pip install bubbletea[llm]`"
+            )
+    raise AttributeError(f"module {__name__} has no attribute {name}")
