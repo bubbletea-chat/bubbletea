@@ -61,5 +61,23 @@ class Done(BaseModel):
     type: Literal["done"] = "done"
 
 
+class Pill(BaseModel):
+    """A single pill component for displaying text"""
+    type: Literal["pill"] = "pill"
+    text: str
+
+    def __init__(self, text: str):
+        super().__init__(text=text)
+
+
+class Pills(BaseModel):
+    """A pills component for displaying multiple pill items in a layout"""
+    type: Literal["pills"] = "pills"
+    pills: List[Pill]
+
+    def __init__(self, pills: List[Pill]):
+        super().__init__(pills=pills)
+
+
 # Type alias for all components
-Component = Union[Text, Image, Markdown, Card, Cards, Done]
+Component = Union[Text, Image, Markdown, Card, Cards, Done, Pill, Pills]
