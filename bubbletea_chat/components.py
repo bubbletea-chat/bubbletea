@@ -41,9 +41,10 @@ class Card(BaseModel):
     image: Image
     text: Optional[str] = None
     markdown: Optional[Markdown] = None
+    card_value: Optional[str] = None
 
-    def __init__(self, image: Image, text: Optional[str] = None, markdown: Optional[Markdown] = None):
-        super().__init__(image=image, text=text, markdown=markdown)
+    def __init__(self, image: Image, text: Optional[str] = None, markdown: Optional[Markdown] = None, card_value: Optional[str] = None):
+        super().__init__(image=image, text=text, markdown=markdown, card_value=card_value)
 
 
 class Cards(BaseModel):
@@ -65,9 +66,10 @@ class Pill(BaseModel):
     """A single pill component for displaying text"""
     type: Literal["pill"] = "pill"
     text: str
+    pill_value: Optional[str] = None
 
-    def __init__(self, text: str):
-        super().__init__(text=text)
+    def __init__(self, text: str, pill_value: Optional[str] = None):
+        super().__init__(text=text, pill_value=pill_value)
 
 
 class Pills(BaseModel):
