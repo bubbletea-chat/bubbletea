@@ -24,24 +24,28 @@ class ChatbotFunction:
         self.is_generator = inspect.isgeneratorfunction(func) or inspect.isasyncgenfunction(func)
         self.stream = stream if stream is not None else self.is_generator
         
-    async def __call__(self, message: str, images: List[ImageInput] = None) -> Union[List[Component], AsyncGenerator[Component, None]]:
+    async def __call__(self, message: str, images: List[ImageInput] = None, user_email: str = None, user_uuid: str = None, conversation_uuid: str = None) -> Union[List[Component], AsyncGenerator[Component, None]]:
         """Execute the chatbot function"""
-        # Check function signature to determine if it accepts images
+        # Check function signature to determine what parameters it accepts
         sig = inspect.signature(self.func)
         params = list(sig.parameters.keys())
         
-        if len(params) > 1 and 'images' in params:
-            # Function accepts images parameter
-            if self.is_async:
-                result = await self.func(message, images=images)
-            else:
-                result = self.func(message, images=images)
+        # Build kwargs based on what the function accepts
+        kwargs = {}
+        if 'images' in params:
+            kwargs['images'] = images
+        if 'user_email' in params:
+            kwargs['user_email'] = user_email
+        if 'user_uuid' in params:
+            kwargs['user_uuid'] = user_uuid
+        if 'conversation_uuid' in params:
+            kwargs['conversation_uuid'] = conversation_uuid
+            
+        # Call function with appropriate parameters
+        if self.is_async:
+            result = await self.func(message, **kwargs)
         else:
-            # Backward compatibility: function only accepts message
-            if self.is_async:
-                result = await self.func(message)
-            else:
-                result = self.func(message)
+            result = self.func(message, **kwargs)
             
         # Handle different return types
         if self.is_generator:
@@ -62,7 +66,13 @@ class ChatbotFunction:
     
     async def handle_request(self, request: ComponentChatRequest):
         """Handle incoming chat request and return appropriate response"""
-        components = await self(request.message, images=request.images)
+        components = await self(
+            request.message, 
+            images=request.images,
+            user_email=request.user_email,
+            user_uuid=request.user_uuid,
+            conversation_uuid=request.conversation_uuid
+        )
         
         if self.stream:
             # Return async generator for streaming
@@ -121,6 +131,8 @@ def config(path: str = "/config"):
                 is_streaming=True,
                 emoji="🤖",
                 initial_text="Hello! How can I help?"
+                authorization="private",
+                authorized_emails=["test@example.com"]
             )
     """
     def decorator(func: Callable) -> Callable:
