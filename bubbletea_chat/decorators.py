@@ -121,6 +121,8 @@ def config(path: str = "/config"):
                 is_streaming=True,
                 emoji="🤖",
                 initial_text="Hello! How can I help?"
+                authorization="private",
+                authorized_emails=["test@example.com"]
             )
     """
     def decorator(func: Callable) -> Callable:

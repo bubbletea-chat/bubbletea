@@ -33,5 +33,7 @@ class BotConfig(BaseModel):
     is_streaming: bool = Field(..., description="Whether the bot supports streaming responses")
     emoji: Optional[str] = Field("🤖", description="Emoji to represent the bot")
     initial_text: Optional[str] = Field("Hi! How can I help you today?", description="Initial greeting message")
+    authorization: Optional[Literal["public", "private"]] = Field("public", description="Authorization type for the bot")
+    authorized_emails: Optional[List[str]] = Field(None, description="List of authorized emails for private bots")
     # CORS configuration (optional)
     cors_config: Optional[Dict[str, Any]] = Field(None, description="Custom CORS configuration")
