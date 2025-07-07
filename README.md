@@ -61,7 +61,9 @@ def get_config():
         url="http://localhost:8000",
         is_streaming=True,
         emoji="🌤️",
-        initial_text="Hello! I can help you check the weather. Which city would you like to know about?"
+        initial_text="Hello! I can help you check the weather. Which city would you like to know about?",
+        authorization="private", # Example: Set to "private" for restricted access
+        authorized_emails=["admin@example.com", "user@example.com"] # Example: List of authorized emails
     )
 
 # Define the chatbot
@@ -175,6 +177,40 @@ BubbleTea supports rich components for building engaging chatbot experiences:
 - **Text**: Plain text messages
 - **Image**: Images with optional alt text  
 - **Markdown**: Rich formatted text
+- **Card**: A single card component with an image and optional text/markdown.
+- **Cards**: A collection of cards displayed in a layout.
+- **Pill**: A single pill component for displaying text.
+- **Pills**: A collection of pill items.
+
+#### Card Component Example
+
+```python
+from bubbletea_chat import chatbot, Card, Image, Text
+
+@chatbot
+async def card_bot(message: str):
+    yield Text("Here's a card for you:")
+    yield Card(
+        image=Image(url="https://picsum.photos/id/237/200/300", alt="A dog"),
+        text="This is a dog card.",
+        card_value="dog_card_clicked"
+    )
+```
+
+#### Pills Component Example
+
+```python
+from bubbletea_chat import chatbot, Pill, Pills, Text
+
+@chatbot
+async def pills_bot(message: str):
+    yield Text("Choose your favorite fruit:")
+    yield Pills(pills=[
+        Pill(text="Apple", pill_value="apple_selected"),
+        Pill(text="Banana", pill_value="banana_selected"),
+        Pill(text="Orange", pill_value="orange_selected")
+    ])
+```
 
 ### 🔄 Streaming Support
 
@@ -389,6 +425,10 @@ async def my_bot(message: str, images: list = None):
 - `bt.Text(content: str)` - Plain text message
 - `bt.Image(url: str, alt: str = None)` - Image component
 - `bt.Markdown(content: str)` - Markdown formatted text
+- `bt.Card(image: Image, text: Optional[str] = None, markdown: Optional[Markdown] = None, card_value: Optional[str] = None)` - A single card component.
+- `bt.Cards(cards: List[Card], orient: Literal["wide", "tall"] = "wide")` - A collection of cards.
+- `bt.Pill(text: str, pill_value: Optional[str] = None)` - A single pill component.
+- `bt.Pills(pills: List[Pill])` - A collection of pill items.
 
 ### LLM Class
 
