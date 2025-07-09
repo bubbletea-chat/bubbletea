@@ -19,6 +19,9 @@ class ComponentChatRequest(BaseModel):
     type: Literal["user"]
     message: str
     images: Optional[List[ImageInput]] = Field(None, description="Optional images to include with the message")
+    user_uuid: Optional[str] = Field(None, description="UUID of the user making the request")
+    conversation_uuid: Optional[str] = Field(None, description="UUID of the conversation")
+    user_email: Optional[str] = Field(None, description="Email of the user making the request")
 
 
 class ComponentChatResponse(BaseModel):
