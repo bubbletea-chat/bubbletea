@@ -6,6 +6,8 @@ Build AI chatbots for the BubbleTea platform with simple Python functions.
 
 **NEW: Vision & Image Generation!** 📸🎨 Build multimodal bots that can analyze images and generate new ones using AI.
 
+**NEW: User & Conversation Tracking!** 🔍 Chat requests now include `user_uuid` and `conversation_uuid` for better context awareness.
+
 ## Installation
 
 ```bash
@@ -229,6 +231,33 @@ async def streaming_bot(message: str):
     yield bt.Image("https://example.com/image.jpg")
     yield bt.Text("All done!")
 ```
+
+### 🔍 User & Conversation Context
+
+Starting with version 0.2.0, BubbleTea chat requests include UUID fields for tracking users and conversations:
+
+```python
+@bt.chatbot
+def echo_bot(message: str, user_uuid: str = None, conversation_uuid: str = None):
+    """A simple bot that echoes back the user's message"""
+    response = f"You said: {message}"
+    if user_uuid:
+        response += f"\nYour User UUID: {user_uuid}"
+    if conversation_uuid:
+        response += f"\nYour Conversation UUID: {conversation_uuid}"
+
+    return bt.Text(f"You said: {response}")
+```
+
+The `user_uuid` and `conversation_uuid` are optional parameters that BubbleTea automatically includes in requests when available. These UUIDs are:
+- **user_uuid**: A unique identifier for the user making the request
+- **conversation_uuid**: A unique identifier for the conversation/chat session
+
+You can use these to:
+- Maintain conversation history
+- Personalize responses based on user preferences
+- Track usage analytics
+- Implement stateful conversations
 
 ## Examples
 
