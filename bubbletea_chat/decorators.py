@@ -4,7 +4,7 @@ Decorators for creating BubbleTea chatbots
 
 import asyncio
 import inspect
-from typing import Callable, List, AsyncGenerator, Generator, Union, Tuple, Optional
+from typing import Any, Callable, Dict, List, AsyncGenerator, Generator, Union, Tuple, Optional
 from functools import wraps
 
 from .components import Component, Done
@@ -24,7 +24,7 @@ class ChatbotFunction:
         self.is_generator = inspect.isgeneratorfunction(func) or inspect.isasyncgenfunction(func)
         self.stream = stream if stream is not None else self.is_generator
         
-    async def __call__(self, message: str, images: List[ImageInput] = None, user_email: str = None, user_uuid: str = None, conversation_uuid: str = None) -> Union[List[Component], AsyncGenerator[Component, None]]:
+    async def __call__(self, message: str, images: List[ImageInput] = None, user_email: str = None, user_uuid: str = None, conversation_uuid: str = None, chat_history: Union[List[Dict[str, Any]], str] = None) -> Union[List[Component], AsyncGenerator[Component, None]]:
         """Execute the chatbot function"""
         # Check function signature to determine what parameters it accepts
         sig = inspect.signature(self.func)
@@ -40,6 +40,20 @@ class ChatbotFunction:
             kwargs['user_uuid'] = user_uuid
         if 'conversation_uuid' in params:
             kwargs['conversation_uuid'] = conversation_uuid
+            
+        # Handle chat_history parameter compatibility
+        if 'chat_history' in params:
+            # Check if the function signature expects a specific type
+            param_annotation = sig.parameters['chat_history'].annotation
+            if param_annotation == str or param_annotation == Optional[str]:
+                # Function expects string, convert list to string if needed
+                if isinstance(chat_history, list):
+                    kwargs['chat_history'] = str(chat_history)
+                else:
+                    kwargs['chat_history'] = chat_history
+            else:
+                # Function expects list or is untyped, keep as is
+                kwargs['chat_history'] = chat_history
             
         # Call function with appropriate parameters
         if self.is_async:
@@ -71,7 +85,8 @@ class ChatbotFunction:
             images=request.images,
             user_email=request.user_email,
             user_uuid=request.user_uuid,
-            conversation_uuid=request.conversation_uuid
+            conversation_uuid=request.conversation_uuid,
+            chat_history=request.chat_history
         )
         
         if self.stream:

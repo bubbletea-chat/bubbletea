@@ -22,6 +22,7 @@ class ComponentChatRequest(BaseModel):
     user_uuid: Optional[str] = Field(None, description="UUID of the user making the request")
     conversation_uuid: Optional[str] = Field(None, description="UUID of the conversation")
     user_email: Optional[str] = Field(None, description="Email of the user making the request")
+    chat_history: Optional[Union[List[Dict[str, Any]], str]] = Field(None, description="Detailed message history with metadata (list) or context string")
 
 
 class ComponentChatResponse(BaseModel):
@@ -32,7 +33,7 @@ class ComponentChatResponse(BaseModel):
 class BotConfig(BaseModel):
     """Configuration for a BubbleTea bot"""
     # Required fields
-    name: str = Field(..., description="Handle - unique identifier used in URLs (no spaces)", regex=r'^[a-zA-Z0-9_-]+$')
+    name: str = Field(..., description="Handle - unique identifier used in URLs (no spaces)", pattern=r'^[a-zA-Z0-9_-]+$')
     url: str = Field(..., description="URL where the bot is hosted")
     is_streaming: bool = Field(..., description="Whether the bot supports streaming responses")
     

@@ -238,26 +238,51 @@ Starting with version 0.2.0, BubbleTea chat requests include UUID fields for tra
 
 ```python
 @bt.chatbot
-def echo_bot(message: str, user_uuid: str = None, conversation_uuid: str = None):
+def echo_bot(message: str, user_uuid: str = None, conversation_uuid: str = None, user_email: str = None):
     """A simple bot that echoes back the user's message"""
     response = f"You said: {message}"
     if user_uuid:
         response += f"\nYour User UUID: {user_uuid}"
     if conversation_uuid:
         response += f"\nYour Conversation UUID: {conversation_uuid}"
+    if user_email:
+        response += f"\nYour Email: {user_email}"
 
-    return bt.Text(f"You said: {response}")
+    return bt.Text(response)
 ```
 
-The `user_uuid` and `conversation_uuid` are optional parameters that BubbleTea automatically includes in requests when available. These UUIDs are:
+The optional parameters that BubbleTea automatically includes in requests when available are:
 - **user_uuid**: A unique identifier for the user making the request
 - **conversation_uuid**: A unique identifier for the conversation/chat session
+- **user_email**: The email address of the user making the request
 
 You can use these to:
 - Maintain conversation history
 - Personalize responses based on user preferences
 - Track usage analytics
 - Implement stateful conversations
+- Provide user-specific features based on email
+
+### 💬 Chat History
+
+BubbleTea now supports passing chat history to your bots for context-aware conversations:
+
+```python
+@bt.chatbot
+async def context_aware_bot(message: str, chat_history: list = None):
+    """A bot that uses conversation history for context"""
+    if chat_history:
+        # chat_history is a list of 5 user messages and 5 bot messages dictionaries with metadata
+        yield bt.Text(f"I see we have {previous_messages} previous messages in our conversation.")
+        
+        # You can use the history to provide contextual responses
+        llm = LLM(model="gpt-4")
+        context_prompt = f"Based on our conversation history: {chat_history}\n\nUser: {message}"
+        response = await llm.acomplete(context_prompt)
+        yield bt.Text(response)
+    else:
+        yield bt.Text("This seems to be the start of our conversation!")
+```
 
 ## Examples
 
@@ -441,11 +466,18 @@ async def streaming_bot(message: str):
 - `@bt.chatbot(name="custom-name")` - Set a custom bot name
 - `@bt.chatbot(stream=False)` - Force non-streaming mode
 
-**Image Support**: Functions can accept an optional `images` parameter:
+**Optional Parameters**: Your chatbot functions can accept these optional parameters that BubbleTea provides automatically:
 ```python
 @bt.chatbot
-async def my_bot(message: str, images: list = None):
-    # images will contain ImageInput objects if provided
+async def my_bot(
+    message: str,                                    # Required: The user's message
+    images: list = None,                            # Optional: List of ImageInput objects
+    user_uuid: str = None,                          # Optional: Unique user identifier
+    conversation_uuid: str = None,                  # Optional: Unique conversation identifier
+    user_email: str = None,                         # Optional: User's email address
+    chat_history: Union[List[Dict], str] = None     # Optional: Conversation history
+):
+    # Your bot logic here
     pass
 ```
 
