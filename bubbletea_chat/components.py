@@ -81,5 +81,34 @@ class Pills(BaseModel):
         super().__init__(pills=pills)
 
 
+class Video(BaseModel):
+    """A video component for displaying video content"""
+    type: Literal["video"] = "video"
+    url: str
+
+    def __init__(self, url: str):
+        super().__init__(url=url)
+
+
+class Block(BaseModel):
+    """A block component to indicate long-running operations"""
+    type: Literal["block"] = "block"
+    timeout: int = 60  # seconds, default 60
+
+    def __init__(self, timeout: int = 60):
+        super().__init__(timeout=timeout)
+
+
+class Error(BaseModel):
+    """An error component for displaying error messages"""
+    type: Literal["error"] = "error"
+    title: str
+    description: Optional[str] = None
+    code: Optional[str] = None
+
+    def __init__(self, title: str, description: Optional[str] = None, code: Optional[str] = None):
+        super().__init__(title=title, description=description, code=code)
+
+
 # Type alias for all components
-Component = Union[Text, Image, Markdown, Card, Cards, Done, Pill, Pills]
+Component = Union[Text, Image, Markdown, Card, Cards, Done, Pill, Pills, Video, Block, Error]

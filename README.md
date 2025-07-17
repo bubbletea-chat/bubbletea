@@ -10,8 +10,15 @@ Build AI chatbots for the BubbleTea platform with simple Python functions.
 
 ## Installation
 
+### Basic Installation
 ```bash
 pip install bubbletea-chat
+```
+
+### With LLM Support
+To include LiteLLM integration for AI models (OpenAI, Claude, Gemini, and 100+ more):
+```bash
+pip install 'bubbletea-chat[llm]'
 ```
 
 ## Quick Start
@@ -47,7 +54,11 @@ This will start a server at `http://localhost:8000` with your chatbot available 
 
 ### Configuration with `@config` Decorator
 
-BubbleTea provides a `@config` decorator to define and expose bot configurations via a dedicated endpoint. This is useful for setting up bot metadata, such as its name, URL, emoji, and initial greeting.
+BubbleTea provides a `@config` decorator to define and expose bot configurations via a dedicated endpoint. This is essential for:
+- Setting up bot metadata (name, URL, description)
+- Enabling subscriptions and payments
+- Configuring app store-style listing information
+- Managing access control and visibility
 
 #### Example: Using the `@config` Decorator
 
@@ -59,13 +70,26 @@ import bubbletea_chat as bt
 @bt.config()
 def get_config():
     return bt.BotConfig(
-        name="Weather Bot",
+        # Required fields
+        name="weather-bot",  # URL-safe handle (no spaces)
         url="http://localhost:8000",
         is_streaming=True,
-        emoji="🌤️",
-        initial_text="Hello! I can help you check the weather. Which city would you like to know about?",
-        authorization="private", # Example: Set to "private" for restricted access
-        authorized_emails=["admin@example.com", "user@example.com"] # Example: List of authorized emails
+        
+        # App store metadata
+        display_name="Weather Bot",  # User-facing name (max 20 chars)
+        subtitle="Real-time weather updates",  # Brief description (max 30 chars)
+        icon_emoji="🌤️",  # Or use icon_url for custom icon
+        description="Get accurate weather forecasts for any city worldwide.",
+        
+        # Subscription/Payment (in cents)
+        subscription_monthly_price=499,  # $4.99/month (0 = free)
+        
+        # Access control
+        visibility="public",  # "public" or "private"
+        authorized_emails=["admin@example.com"],  # For private bots
+        
+        # User experience
+        initial_text="Hello! I can help you check the weather. Which city would you like to know about?"
     )
 
 # Define the chatbot
@@ -85,6 +109,11 @@ curl http://localhost:8000/config
 
 This will return the bot's configuration as a JSON object.
 
+**Note on URL Paths:** If your bot runs on a custom path (e.g., `/pillsbot`), BubbleTea will automatically append `/config` to that path. For example:
+- Bot URL: `http://localhost:8010/pillsbot` → Config endpoint: `http://localhost:8010/pillsbot/config`
+- Bot URL: `http://localhost:8000/my-bot` → Config endpoint: `http://localhost:8000/my-bot/config`
+- Bot URL: `http://localhost:8000` → Config endpoint: `http://localhost:8000/config`
+
 #### Dynamic Bot Creation Using `/config`
 
 BubbleTea agents can dynamically create new chatbots by utilizing the `/config` endpoint. For example, if you provide a command like:
@@ -94,6 +123,81 @@ create new bot 'bot-name' with url 'http://example.com'
 ```
 
 The agent will automatically fetch the configuration from `http://example.com/config` and create a new chatbot based on the metadata defined in the configuration. This allows for seamless integration and creation of new bots without manual setup.
+
+### Complete BotConfig Reference
+
+The `BotConfig` class supports extensive configuration options for your bot:
+
+#### Required Fields
+- `name` (str): URL-safe bot handle (no spaces, used in URLs)
+- `url` (str): Bot hosting URL
+- `is_streaming` (bool): Enable streaming responses
+
+#### App Store Metadata
+- `display_name` (str): User-facing name (max 20 characters)
+- `subtitle` (str): Brief tagline (max 30 characters)
+- `description` (str): Full Markdown description
+- `icon_url` (str): 1024x1024 PNG icon URL
+- `icon_emoji` (str): Alternative emoji icon
+- `preview_video_url` (str): Demo video URL
+
+#### Subscription & Payment
+- `subscription_monthly_price` (int): Price in cents
+  - Example: `999` = $9.99/month
+  - Set to `0` for free bots
+  - Users are automatically billed monthly
+  - Subscription status is passed to your bot
+
+#### Access Control
+- `visibility` (str): "public" or "private"
+- `authorized_emails` (List[str]): Whitelist for private bots
+- `authorization` (str): Deprecated, use `visibility`
+
+#### User Experience
+- `initial_text` (str): Welcome message
+- `cors_config` (dict): Custom CORS settings
+
+
+
+### Payment & Subscription Example
+
+```python
+@bt.config()
+def get_config():
+    return bt.BotConfig(
+        # Basic configuration
+        name="premium-assistant",
+        url="https://your-bot.com",
+        is_streaming=True,
+        
+        # Enable subscription
+        subscription_monthly_price=1999,  # $19.99/month
+        
+        # Premium-only access
+        visibility="public",  # Anyone can see it
+        # But only subscribers can use it
+    )
+
+@bt.chatbot
+async def premium_bot(message: str, user_email: str = None, subscription_status: str = None):
+    """Subscription status is automatically provided by BubbleTea"""
+    if subscription_status == "active":
+        # Full premium features
+        llm = LLM(model="gpt-4")
+        response = await llm.acomplete(message)
+        yield bt.Text(response)
+    else:
+        # Limited features for non-subscribers
+        yield bt.Text("Subscribe to access premium features!")
+        yield bt.Markdown("""
+        ## 💎 Premium Features
+        - Advanced AI responses
+        - Priority support
+        - And much more!
+        
+        **Only $19.99/month**
+        """)
+```
 
 ## Features
 
@@ -174,15 +278,25 @@ async def art_bot(prompt: str):
 
 ### 📦 Components
 
-BubbleTea supports rich components for building engaging chatbot experiences:
+**Video Component Features:**
+- Embed videos from any URL (MP4, WebM, etc.)
+- Works in web and mobile BubbleTea clients
 
-- **Text**: Plain text messages
-- **Image**: Images with optional alt text  
-- **Markdown**: Rich formatted text
-- **Card**: A single card component with an image and optional text/markdown.
-- **Cards**: A collection of cards displayed in a layout.
-- **Pill**: A single pill component for displaying text.
-- **Pills**: A collection of pill items.
+**Video API:**
+```python
+Video(url: str)
+```
+
+#### Video Component Example
+```python
+@chatbot
+async def video_bot(message: str):
+    yield Text("Here's a video for you:")
+    yield Video(
+        url="https://www.w3schools.com/html/mov_bbb.mp4"
+    )
+    yield Text("Did you enjoy the video?")
+```
 
 #### Card Component Example
 
@@ -213,6 +327,48 @@ async def pills_bot(message: str):
         Pill(text="Orange", pill_value="orange_selected")
     ])
 ```
+
+#### Error Component Example
+
+```python
+from bubbletea_chat import chatbot, Error, Text
+
+@chatbot
+async def error_handling_bot(message: str):
+    if "error" in message.lower():
+        # Return an error component with details
+        return Error(
+            title="Service Unavailable",
+            description="The requested service is temporarily unavailable. Please try again later.",
+            code="ERR_503"
+        )
+    elif "fail" in message.lower():
+        # Simple error without description
+        return Error(
+            title="Operation Failed",
+            code="ERR_001"
+        )
+    else:
+        return Text("Try saying 'error' or 'fail' to see error messages.")
+```
+
+**Error Component Features:**
+- **title** (required): The main error message to display
+- **description** (optional): Additional context or instructions
+- **code** (optional): Error code for debugging/support
+
+The Error component is automatically styled with:
+- Warning icon (⚠️)
+- Red-themed design for visibility
+- Clear formatting to distinguish from regular messages
+- Support for retry functionality (when implemented by the frontend)
+
+**Common Use Cases:**
+- API failures
+- Authentication errors
+- Validation errors
+- Service unavailability
+- Rate limiting messages
 
 ### 🔄 Streaming Support
 
@@ -283,6 +439,44 @@ async def context_aware_bot(message: str, chat_history: list = None):
     else:
         yield bt.Text("This seems to be the start of our conversation!")
 ```
+
+### Multiple Bots with Unique Routes
+
+You can create multiple bots in the same application, each with its own unique route:
+
+```python
+import bubbletea_chat as bt
+
+# Bot 1: Available at /support
+@bt.chatbot("support")
+def support_bot(message: str):
+    return bt.Text("Welcome to support! How can I help you?")
+
+# Bot 2: Available at /sales
+@bt.chatbot("sales")
+def sales_bot(message: str):
+    return bt.Text("Hi! I'm here to help with sales inquiries.")
+
+# Bot 3: Default route at /chat
+@bt.chatbot()
+def general_bot(message: str):
+    return bt.Text("Hello! I'm the general assistant.")
+
+# This would raise ValueError - duplicate route!
+# @bt.chatbot("support")
+# def another_support_bot(message: str):
+#     yield bt.Text("This won't work!")
+
+if __name__ == "__main__":
+    # Get all registered bots
+    bt.run_server(port=8000)
+```
+
+**Important Notes:**
+- Routes are case-sensitive: `/Bot1` is different from `/bot1`
+- Each bot must have a unique route
+- The default route is `/chat` if no route is specified
+- Routes automatically get a leading `/` if not provided
 
 ## Examples
 
@@ -465,6 +659,9 @@ async def streaming_bot(message: str):
 - `@bt.chatbot` - Create a chatbot from a function
 - `@bt.chatbot(name="custom-name")` - Set a custom bot name
 - `@bt.chatbot(stream=False)` - Force non-streaming mode
+- `@bt.chatbot("route-name")` - Create a chatbot with a custom URL route (e.g., `/route-name`)
+
+**Route Validation**: Each chatbot must have a unique URL path. If you try to register multiple bots with the same route, a `ValueError` will be raised.
 
 **Optional Parameters**: Your chatbot functions can accept these optional parameters that BubbleTea provides automatically:
 ```python
@@ -490,6 +687,8 @@ async def my_bot(
 - `bt.Cards(cards: List[Card], orient: Literal["wide", "tall"] = "wide")` - A collection of cards.
 - `bt.Pill(text: str, pill_value: Optional[str] = None)` - A single pill component.
 - `bt.Pills(pills: List[Pill])` - A collection of pill items.
+- `bt.Video(url: str)` - Video component
+- `bt.Error(title: str, description: Optional[str] = None, code: Optional[str] = None)` - Error message component
 
 ### LLM Class
 
@@ -607,6 +806,18 @@ Test with curl:
 curl -X POST "http://localhost:8000/chat" \
   -H "Content-Type: application/json" \
   -d '{"type": "user", "message": "Hello bot!"}'
+
+# Test config endpoint
+curl http://localhost:8000/config
+
+# For bots on custom paths
+# If your bot runs at /pillsbot:
+curl -X POST "http://localhost:8000/pillsbot" \
+  -H "Content-Type: application/json" \
+  -d '{"type": "user", "message": "Hello bot!"}'
+
+# Config endpoint for custom path bot
+curl http://localhost:8000/pillsbot/config
 
 # With image URL
 curl -X POST "http://localhost:8000/chat" \
