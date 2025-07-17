@@ -81,5 +81,14 @@ class Pills(BaseModel):
         super().__init__(pills=pills)
 
 
+class Video(BaseModel):
+    """A video component for displaying video content"""
+    type: Literal["video"] = "video"
+    url: str
+
+    def __init__(self, url: str):
+        super().__init__(url=url)
+
+
 # Type alias for all components
-Component = Union[Text, Image, Markdown, Card, Cards, Done, Pill, Pills]
+Component = Union[Text, Image, Markdown, Card, Cards, Done, Pill, Pills, Video]

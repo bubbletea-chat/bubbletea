@@ -9,6 +9,7 @@ from .components import Component
 
 class ImageInput(BaseModel):
     """Image input that can be either a URL or base64 encoded data"""
+    text: Optional[str] = Field(None, description="Text description of the image")
     url: Optional[str] = Field(None, description="URL of the image")
     base64: Optional[str] = Field(None, description="Base64 encoded image data")
     mime_type: Optional[str] = Field(None, description="MIME type of the image (e.g., image/jpeg, image/png)")
