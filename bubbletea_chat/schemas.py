@@ -53,6 +53,7 @@ class BotConfig(BaseModel):
     initial_text: Optional[str] = Field("Hi! How can I help you today?", description="Initial greeting message")
     authorization: Optional[Literal["public", "private"]] = Field("public", description="Authorization type (deprecated, use visibility)")
     authorized_emails: Optional[List[str]] = Field(None, description="List of authorized emails for private bots")
+    subscription_monthly_price: Optional[int] = Field(0, description="Monthly subscription price in cents")
     
     # CORS configuration (optional)
     cors_config: Optional[Dict[str, Any]] = Field(None, description="Custom CORS configuration")
