@@ -99,5 +99,16 @@ class Block(BaseModel):
         super().__init__(timeout=timeout)
 
 
+class Error(BaseModel):
+    """An error component for displaying error messages"""
+    type: Literal["error"] = "error"
+    title: str
+    description: Optional[str] = None
+    code: Optional[str] = None
+
+    def __init__(self, title: str, description: Optional[str] = None, code: Optional[str] = None):
+        super().__init__(title=title, description=description, code=code)
+
+
 # Type alias for all components
-Component = Union[Text, Image, Markdown, Card, Cards, Done, Pill, Pills, Video, Block]
+Component = Union[Text, Image, Markdown, Card, Cards, Done, Pill, Pills, Video, Block, Error]
