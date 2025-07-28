@@ -323,6 +323,48 @@ async def pills_bot(message: str):
     ])
 ```
 
+#### Error Component Example
+
+```python
+from bubbletea_chat import chatbot, Error, Text
+
+@chatbot
+async def error_handling_bot(message: str):
+    if "error" in message.lower():
+        # Return an error component with details
+        return Error(
+            title="Service Unavailable",
+            description="The requested service is temporarily unavailable. Please try again later.",
+            code="ERR_503"
+        )
+    elif "fail" in message.lower():
+        # Simple error without description
+        return Error(
+            title="Operation Failed",
+            code="ERR_001"
+        )
+    else:
+        return Text("Try saying 'error' or 'fail' to see error messages.")
+```
+
+**Error Component Features:**
+- **title** (required): The main error message to display
+- **description** (optional): Additional context or instructions
+- **code** (optional): Error code for debugging/support
+
+The Error component is automatically styled with:
+- Warning icon (⚠️)
+- Red-themed design for visibility
+- Clear formatting to distinguish from regular messages
+- Support for retry functionality (when implemented by the frontend)
+
+**Common Use Cases:**
+- API failures
+- Authentication errors
+- Validation errors
+- Service unavailability
+- Rate limiting messages
+
 ### 🔄 Streaming Support
 
 BubbleTea automatically detects generator functions and streams responses:
@@ -600,6 +642,7 @@ async def my_bot(
 - `bt.Pill(text: str, pill_value: Optional[str] = None)` - A single pill component.
 - `bt.Pills(pills: List[Pill])` - A collection of pill items.
 - `bt.Video(url: str)` - Video component
+- `bt.Error(title: str, description: Optional[str] = None, code: Optional[str] = None)` - Error message component
 
 ### LLM Class
 
