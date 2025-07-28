@@ -10,8 +10,15 @@ Build AI chatbots for the BubbleTea platform with simple Python functions.
 
 ## Installation
 
+### Basic Installation
 ```bash
 pip install bubbletea-chat
+```
+
+### With LLM Support
+To include LiteLLM integration for AI models (OpenAI, Claude, Gemini, and 100+ more):
+```bash
+pip install 'bubbletea-chat[llm]'
 ```
 
 ## Quick Start
@@ -47,7 +54,11 @@ This will start a server at `http://localhost:8000` with your chatbot available 
 
 ### Configuration with `@config` Decorator
 
-BubbleTea provides a `@config` decorator to define and expose bot configurations via a dedicated endpoint. This is useful for setting up bot metadata, such as its name, URL, emoji, and initial greeting.
+BubbleTea provides a `@config` decorator to define and expose bot configurations via a dedicated endpoint. This is essential for:
+- Setting up bot metadata (name, URL, description)
+- Enabling subscriptions and payments
+- Configuring app store-style listing information
+- Managing access control and visibility
 
 #### Example: Using the `@config` Decorator
 
@@ -59,13 +70,26 @@ import bubbletea_chat as bt
 @bt.config()
 def get_config():
     return bt.BotConfig(
-        name="Weather Bot",
+        # Required fields
+        name="weather-bot",  # URL-safe handle (no spaces)
         url="http://localhost:8000",
         is_streaming=True,
-        emoji="🌤️",
-        initial_text="Hello! I can help you check the weather. Which city would you like to know about?",
-        authorization="private", # Example: Set to "private" for restricted access
-        authorized_emails=["admin@example.com", "user@example.com"] # Example: List of authorized emails
+        
+        # App store metadata
+        display_name="Weather Bot",  # User-facing name (max 20 chars)
+        subtitle="Real-time weather updates",  # Brief description (max 30 chars)
+        icon_emoji="🌤️",  # Or use icon_url for custom icon
+        description="Get accurate weather forecasts for any city worldwide.",
+        
+        # Subscription/Payment (in cents)
+        subscription_monthly_price=499,  # $4.99/month (0 = free)
+        
+        # Access control
+        visibility="public",  # "public" or "private"
+        authorized_emails=["admin@example.com"],  # For private bots
+        
+        # User experience
+        initial_text="Hello! I can help you check the weather. Which city would you like to know about?"
     )
 
 # Define the chatbot
@@ -94,6 +118,81 @@ create new bot 'bot-name' with url 'http://example.com'
 ```
 
 The agent will automatically fetch the configuration from `http://example.com/config` and create a new chatbot based on the metadata defined in the configuration. This allows for seamless integration and creation of new bots without manual setup.
+
+### Complete BotConfig Reference
+
+The `BotConfig` class supports extensive configuration options for your bot:
+
+#### Required Fields
+- `name` (str): URL-safe bot handle (no spaces, used in URLs)
+- `url` (str): Bot hosting URL
+- `is_streaming` (bool): Enable streaming responses
+
+#### App Store Metadata
+- `display_name` (str): User-facing name (max 20 characters)
+- `subtitle` (str): Brief tagline (max 30 characters)
+- `description` (str): Full Markdown description
+- `icon_url` (str): 1024x1024 PNG icon URL
+- `icon_emoji` (str): Alternative emoji icon
+- `preview_video_url` (str): Demo video URL
+
+#### Subscription & Payment
+- `subscription_monthly_price` (int): Price in cents
+  - Example: `999` = $9.99/month
+  - Set to `0` for free bots
+  - Users are automatically billed monthly
+  - Subscription status is passed to your bot
+
+#### Access Control
+- `visibility` (str): "public" or "private"
+- `authorized_emails` (List[str]): Whitelist for private bots
+- `authorization` (str): Deprecated, use `visibility`
+
+#### User Experience
+- `initial_text` (str): Welcome message
+- `cors_config` (dict): Custom CORS settings
+
+
+
+### Payment & Subscription Example
+
+```python
+@bt.config()
+def get_config():
+    return bt.BotConfig(
+        # Basic configuration
+        name="premium-assistant",
+        url="https://your-bot.com",
+        is_streaming=True,
+        
+        # Enable subscription
+        subscription_monthly_price=1999,  # $19.99/month
+        
+        # Premium-only access
+        visibility="public",  # Anyone can see it
+        # But only subscribers can use it
+    )
+
+@bt.chatbot
+async def premium_bot(message: str, user_email: str = None, subscription_status: str = None):
+    """Subscription status is automatically provided by BubbleTea"""
+    if subscription_status == "active":
+        # Full premium features
+        llm = LLM(model="gpt-4")
+        response = await llm.acomplete(message)
+        yield bt.Text(response)
+    else:
+        # Limited features for non-subscribers
+        yield bt.Text("Subscribe to access premium features!")
+        yield bt.Markdown("""
+        ## 💎 Premium Features
+        - Advanced AI responses
+        - Priority support
+        - And much more!
+        
+        **Only $19.99/month**
+        """)
+```
 
 ## Features
 
@@ -174,15 +273,25 @@ async def art_bot(prompt: str):
 
 ### 📦 Components
 
-BubbleTea supports rich components for building engaging chatbot experiences:
+**Video Component Features:**
+- Embed videos from any URL (MP4, WebM, etc.)
+- Works in web and mobile BubbleTea clients
 
-- **Text**: Plain text messages
-- **Image**: Images with optional alt text  
-- **Markdown**: Rich formatted text
-- **Card**: A single card component with an image and optional text/markdown.
-- **Cards**: A collection of cards displayed in a layout.
-- **Pill**: A single pill component for displaying text.
-- **Pills**: A collection of pill items.
+**Video API:**
+```python
+Video(url: str)
+```
+
+#### Video Component Example
+```python
+@chatbot
+async def video_bot(message: str):
+    yield Text("Here's a video for you:")
+    yield Video(
+        url="https://www.w3schools.com/html/mov_bbb.mp4"
+    )
+    yield Text("Did you enjoy the video?")
+```
 
 #### Card Component Example
 
@@ -490,6 +599,7 @@ async def my_bot(
 - `bt.Cards(cards: List[Card], orient: Literal["wide", "tall"] = "wide")` - A collection of cards.
 - `bt.Pill(text: str, pill_value: Optional[str] = None)` - A single pill component.
 - `bt.Pills(pills: List[Pill])` - A collection of pill items.
+- `bt.Video(url: str)` - Video component
 
 ### LLM Class
 
