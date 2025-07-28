@@ -90,5 +90,14 @@ class Video(BaseModel):
         super().__init__(url=url)
 
 
+class Block(BaseModel):
+    """A block component to indicate long-running operations"""
+    type: Literal["block"] = "block"
+    timeout: int = 60  # seconds, default 60
+
+    def __init__(self, timeout: int = 60):
+        super().__init__(timeout=timeout)
+
+
 # Type alias for all components
-Component = Union[Text, Image, Markdown, Card, Cards, Done, Pill, Pills, Video]
+Component = Union[Text, Image, Markdown, Card, Cards, Done, Pill, Pills, Video, Block]
