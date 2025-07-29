@@ -17,7 +17,7 @@ from typing import (
 )
 from functools import wraps
 
-from .components import Component, Done
+from .components import Component, Done, BaseComponent
 from .schemas import ComponentChatRequest, ComponentChatResponse, ImageInput, BotConfig
 
 # Module-level registry for config function (deprecated, for backward compatibility)

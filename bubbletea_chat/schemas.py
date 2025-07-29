@@ -4,7 +4,7 @@ Request and response schemas for BubbleTea
 
 from typing import List, Literal, Optional, Union, Dict, Any
 from pydantic import BaseModel, Field, validator
-from .components import Component
+from .components import Component, BaseComponent
 
 
 class ImageInput(BaseModel):
@@ -29,7 +29,7 @@ class ComponentChatRequest(BaseModel):
 
 class ComponentChatResponse(BaseModel):
     """Non-streaming response containing list of components"""
-    responses: List[Component]
+    responses: List[Union[Component, BaseComponent]]
 
 
 class BotConfig(BaseModel):
