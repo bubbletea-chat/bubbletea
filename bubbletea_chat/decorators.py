@@ -4,10 +4,20 @@ Decorators for creating BubbleTea chatbots
 
 import asyncio
 import inspect
-from typing import Any, Callable, Dict, List, AsyncGenerator, Generator, Union, Tuple, Optional
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    AsyncGenerator,
+    Generator,
+    Union,
+    Tuple,
+    Optional,
+)
 from functools import wraps
 
-from .components import Component, Done
+from .components import Component, Done, BaseComponent
 from .schemas import ComponentChatRequest, ComponentChatResponse, ImageInput, BotConfig
 
 # Module-level registry for config function (deprecated, for backward compatibility)
@@ -28,7 +38,9 @@ class ChatbotFunction:
         self.name = name or func.__name__
         self.url_path = url_path or "/chat"  # Default to /chat if not specified
         self.is_async = inspect.iscoroutinefunction(func)
-        self.is_generator = inspect.isgeneratorfunction(func) or inspect.isasyncgenfunction(func)
+        self.is_generator = inspect.isgeneratorfunction(
+            func
+        ) or inspect.isasyncgenfunction(func)
         self.stream = stream if stream is not None else self.is_generator
         self._config_func = None  # Store bot-specific config
     
@@ -67,38 +79,40 @@ class ChatbotFunction:
         # Check function signature to determine what parameters it accepts
         sig = inspect.signature(self.func)
         params = list(sig.parameters.keys())
-        
+
         # Build kwargs based on what the function accepts
         kwargs = {}
-        if 'images' in params:
-            kwargs['images'] = images
-        if 'user_email' in params:
-            kwargs['user_email'] = user_email
-        if 'user_uuid' in params:
-            kwargs['user_uuid'] = user_uuid
-        if 'conversation_uuid' in params:
-            kwargs['conversation_uuid'] = conversation_uuid
-            
+        if "images" in params:
+            kwargs["images"] = images
+        if "user_email" in params:
+            kwargs["user_email"] = user_email
+        if "user_uuid" in params:
+            kwargs["user_uuid"] = user_uuid
+        if "conversation_uuid" in params:
+            kwargs["conversation_uuid"] = conversation_uuid
+        if "thread_id" in params:
+            kwargs["thread_id"] = thread_id
+
         # Handle chat_history parameter compatibility
-        if 'chat_history' in params:
+        if "chat_history" in params:
             # Check if the function signature expects a specific type
-            param_annotation = sig.parameters['chat_history'].annotation
+            param_annotation = sig.parameters["chat_history"].annotation
             if param_annotation == str or param_annotation == Optional[str]:
                 # Function expects string, convert list to string if needed
                 if isinstance(chat_history, list):
-                    kwargs['chat_history'] = str(chat_history)
+                    kwargs["chat_history"] = str(chat_history)
                 else:
-                    kwargs['chat_history'] = chat_history
+                    kwargs["chat_history"] = chat_history
             else:
                 # Function expects list or is untyped, keep as is
-                kwargs['chat_history'] = chat_history
-            
+                kwargs["chat_history"] = chat_history
+
         # Call function with appropriate parameters
         if self.is_async:
             result = await self.func(message, **kwargs)
         else:
             result = self.func(message, **kwargs)
-            
+
         # Handle different return types
         if self.is_generator:
             # Generator functions yield components
@@ -109,24 +123,26 @@ class ChatbotFunction:
                 async def async_wrapper():
                     for item in result:
                         yield item
+
                 return async_wrapper()
         else:
             # Non-generator functions return list of components
             if not isinstance(result, list):
                 result = [result]
             return result
-    
+
     async def handle_request(self, request: ComponentChatRequest):
         """Handle incoming chat request and return appropriate response"""
         components = await self(
-            request.message, 
+            request.message,
             images=request.images,
             user_email=request.user_email,
             user_uuid=request.user_uuid,
             conversation_uuid=request.conversation_uuid,
-            chat_history=request.chat_history
+            chat_history=request.chat_history,
+            thread_id=request.thread_id
         )
-        
+
         if self.stream:
             # Return async generator for streaming
             return components
@@ -146,7 +162,7 @@ class ChatbotFunction:
 def chatbot(name_or_url: Union[str, Callable] = None, stream: bool = None, name: str = None):
     """
     Decorator to create a BubbleTea chatbot from a function
-    
+
     Args:
         name_or_url: Either a URL path (e.g., "pillsbot") or name for the chatbot
                      If it starts without /, it's treated as a URL path
@@ -162,6 +178,7 @@ def chatbot(name_or_url: Union[str, Callable] = None, stream: bool = None, name:
         def another_bot(message: str):
             return Text("Hi!")
     """
+
     def decorator(func: Callable) -> ChatbotFunction:
         # Determine URL path
         url_path = None
@@ -222,10 +239,10 @@ def get_bot_configs() -> Dict[str, Callable]:
 def config(path: str = "/config"):
     """
     Decorator to define bot configuration endpoint
-    
+
     Args:
         path: Optional path for the config endpoint (defaults to "/config")
-    
+
     Example:
         @config()
         def get_config():
@@ -239,15 +256,16 @@ def config(path: str = "/config"):
                 authorized_emails=["test@example.com"]
             )
     """
+
     def decorator(func: Callable) -> Callable:
         global _config_function
         _config_function = (func, path)
         return func
-    
+
     # Allow using @config without parentheses
     if callable(path):
         func = path
         _config_function = (func, "/config")
         return func
-    
+
     return decorator

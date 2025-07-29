@@ -5,7 +5,15 @@ LiteLLM integration for easy LLM calls in BubbleTea bots
 from typing import List, Dict, Optional, AsyncGenerator, Union
 import litellm
 from litellm import acompletion, completion, image_generation, aimage_generation
+from litellm.assistants.main import (
+    create_thread,
+    add_message,
+    run_thread,
+    create_assistants,
+    get_messages,
+)
 from .schemas import ImageInput
+from datetime import datetime
 
 
 class LLM:
@@ -24,8 +32,16 @@ class LLM:
     def __init__(self, model: str = "gpt-3.5-turbo", **kwargs):
         self.model = model
         self.default_params = kwargs
-    
-    def _format_message_with_images(self, content: str, images: Optional[List[ImageInput]] = None) -> Union[str, List[Dict]]:
+        self.llm_provider = kwargs.get("llm_provider", None)
+        self.assistant_id = kwargs.get("assistant_id", None)
+
+        # Initialize assistant if not provided
+        if not self.assistant_id:
+            self._initialize_assistant()
+
+    def _format_message_with_images(
+        self, content: str, images: Optional[List[ImageInput]] = None
+    ) -> Union[str, List[Dict]]:
         """Format message content with images for multimodal models"""
         if not images:
             return content
@@ -253,3 +269,161 @@ class LLM:
         params = {**self.default_params, **kwargs}
         response = await aimage_generation(prompt=prompt, **params)
         return response.data[0].url
+
+    def _initialize_assistant(
+        self,
+        name: Optional[str] = None,
+        instructions: Optional[str] = None,
+        tools: Optional[List] = None,
+        **kwargs,
+    ):
+        """Create the assistant using LiteLLM"""
+        try:
+            params = {
+                "custom_llm_provider": self.llm_provider or "openai",
+                "model": self.model,
+                "name": name or f"BubbleTea Assistant - {datetime.now().isoformat()}",
+                "instructions": instructions
+                or "You are a helpful assistant created by BubbleTea.",
+            }
+
+            if tools:
+                params["tools"] = tools
+
+            # Add any additional parameters
+            params.update(kwargs)
+
+            response = create_assistants(**params)
+
+            # Extract assistant ID from response
+            if isinstance(response, dict) and "id" in response:
+                self.assistant_id = response["id"]
+            elif hasattr(response, "id"):
+                self.assistant_id = response.id
+            else:
+                # If response is a string, it might be the full object representation
+                # Try to extract the ID from the string
+                response_str = str(response)
+                if "id=" in response_str:
+                    # Extract ID from string like "Assistant(id='asst_xxx', ...)"
+                    import re
+
+                    match = re.search(r"id='([^']+)'", response_str)
+                    if match:
+                        self.assistant_id = match.group(1)
+                    else:
+                        print(
+                            f"Could not extract assistant ID from response: {response_str[:100]}"
+                        )
+                        self.assistant_id = None
+                else:
+                    print(f"Unexpected response format: {response_str[:100]}")
+                    self.assistant_id = None
+
+            print(f"Extracted assistant ID: {self.assistant_id}")
+
+        except Exception as e:
+            print(f"Error creating assistant: {e}")
+            self.assistant_id = None
+
+    def create_thread(self, user_uuid: str) -> Optional[str]:
+        """Get existing thread or create new one for user"""
+        try:
+            new_thread = create_thread(
+                custom_llm_provider="openai", messages=[]  # Start with empty thread
+            )
+            print(f"Created thread: {new_thread}")
+
+            # Handle different response formats
+            if isinstance(new_thread, dict):
+                thread_id = new_thread.get("id")
+            elif hasattr(new_thread, "id"):
+                thread_id = new_thread.id
+            else:
+                thread_id = str(new_thread)
+
+            if thread_id:
+                return thread_id
+        except Exception as e:
+            print(f"Error creating thread: {e}")
+            return None
+
+    def add_user_message(self, thread_id: str, message: str) -> bool:
+        """Add user message to their thread"""
+        if not thread_id:
+            return False
+
+        try:
+            result = add_message(
+                thread_id=thread_id,
+                role="user",
+                content=message,
+                custom_llm_provider=self.llm_provider,
+            )
+            return True
+        except Exception as e:
+            print(f"Error adding message: {e}")
+            return False
+
+    def get_assistant_response(self, thread_id: str, message: str) -> Optional[str]:
+        """Get assistant response for the user's thread"""
+        if not self.assistant_id:
+            print("No assistant ID available")
+            return None
+
+        if not thread_id:
+            print("No thread ID available")
+            return None
+
+        try:
+            result = add_message(
+                thread_id=thread_id,
+                role="user",
+                content=message,
+                custom_llm_provider=self.llm_provider,
+            )
+
+            run_response = run_thread(
+                thread_id=thread_id,
+                assistant_id=self.assistant_id,
+                custom_llm_provider=self.llm_provider,
+            )
+
+            messages = get_messages(
+                thread_id=thread_id, custom_llm_provider=self.llm_provider
+            )
+
+            if hasattr(messages, "data") and messages.data:
+                for msg in reversed(messages.data):
+                    if msg.role == "assistant":
+                        print(
+                            f"Assistant message found: {msg.content[0].text.value if msg.content else 'No content'}"
+                        )
+                        if msg.content and len(msg.content) > 0:
+                            return msg.content[0].text.value
+
+            # Fallback handling for different response formats
+            if isinstance(run_response, str):
+                return run_response
+            elif isinstance(run_response, dict):
+                # Check for data field (OpenAI format)
+                if "data" in run_response:
+                    response_messages = run_response["data"]
+                    if response_messages and len(response_messages) > 0:
+                        last_msg = response_messages[-1]
+                        if isinstance(last_msg, dict) and "content" in last_msg:
+                            content = last_msg["content"]
+                            if isinstance(content, list) and len(content) > 0:
+                                return content[0].get("text", {}).get("value")
+                            elif isinstance(content, str):
+                                return content
+                # Check for direct message field
+                elif "message" in run_response:
+                    return run_response["message"]
+                # Check for content field
+                elif "content" in run_response:
+                    return run_response["content"]
+            return None
+        except Exception as e:
+            print(f"Error getting response: {e}")
+            return None
