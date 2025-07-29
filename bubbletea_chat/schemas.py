@@ -24,6 +24,7 @@ class ComponentChatRequest(BaseModel):
     conversation_uuid: Optional[str] = Field(None, description="UUID of the conversation")
     user_email: Optional[str] = Field(None, description="Email of the user making the request")
     chat_history: Optional[Union[List[Dict[str, Any]], str]] = Field(None, description="Detailed message history with metadata (list) or context string")
+    thread_id: Optional[str] = Field(None, description="Thread ID of user conversation")
 
 
 class ComponentChatResponse(BaseModel):
