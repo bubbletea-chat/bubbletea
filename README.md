@@ -109,6 +109,11 @@ curl http://localhost:8000/config
 
 This will return the bot's configuration as a JSON object.
 
+**Note on URL Paths:** If your bot runs on a custom path (e.g., `/pillsbot`), BubbleTea will automatically append `/config` to that path. For example:
+- Bot URL: `http://localhost:8010/pillsbot` → Config endpoint: `http://localhost:8010/pillsbot/config`
+- Bot URL: `http://localhost:8000/my-bot` → Config endpoint: `http://localhost:8000/my-bot/config`
+- Bot URL: `http://localhost:8000` → Config endpoint: `http://localhost:8000/config`
+
 #### Dynamic Bot Creation Using `/config`
 
 BubbleTea agents can dynamically create new chatbots by utilizing the `/config` endpoint. For example, if you provide a command like:
@@ -435,6 +440,44 @@ async def context_aware_bot(message: str, chat_history: list = None):
         yield bt.Text("This seems to be the start of our conversation!")
 ```
 
+### Multiple Bots with Unique Routes
+
+You can create multiple bots in the same application, each with its own unique route:
+
+```python
+import bubbletea_chat as bt
+
+# Bot 1: Available at /support
+@bt.chatbot("support")
+def support_bot(message: str):
+    return bt.Text("Welcome to support! How can I help you?")
+
+# Bot 2: Available at /sales
+@bt.chatbot("sales")
+def sales_bot(message: str):
+    return bt.Text("Hi! I'm here to help with sales inquiries.")
+
+# Bot 3: Default route at /chat
+@bt.chatbot()
+def general_bot(message: str):
+    return bt.Text("Hello! I'm the general assistant.")
+
+# This would raise ValueError - duplicate route!
+# @bt.chatbot("support")
+# def another_support_bot(message: str):
+#     yield bt.Text("This won't work!")
+
+if __name__ == "__main__":
+    # Get all registered bots
+    bt.run_server(port=8000)
+```
+
+**Important Notes:**
+- Routes are case-sensitive: `/Bot1` is different from `/bot1`
+- Each bot must have a unique route
+- The default route is `/chat` if no route is specified
+- Routes automatically get a leading `/` if not provided
+
 ## Examples
 
 ### AI-Powered Bots with LiteLLM
@@ -616,6 +659,9 @@ async def streaming_bot(message: str):
 - `@bt.chatbot` - Create a chatbot from a function
 - `@bt.chatbot(name="custom-name")` - Set a custom bot name
 - `@bt.chatbot(stream=False)` - Force non-streaming mode
+- `@bt.chatbot("route-name")` - Create a chatbot with a custom URL route (e.g., `/route-name`)
+
+**Route Validation**: Each chatbot must have a unique URL path. If you try to register multiple bots with the same route, a `ValueError` will be raised.
 
 **Optional Parameters**: Your chatbot functions can accept these optional parameters that BubbleTea provides automatically:
 ```python
@@ -760,6 +806,18 @@ Test with curl:
 curl -X POST "http://localhost:8000/chat" \
   -H "Content-Type: application/json" \
   -d '{"type": "user", "message": "Hello bot!"}'
+
+# Test config endpoint
+curl http://localhost:8000/config
+
+# For bots on custom paths
+# If your bot runs at /pillsbot:
+curl -X POST "http://localhost:8000/pillsbot" \
+  -H "Content-Type: application/json" \
+  -d '{"type": "user", "message": "Hello bot!"}'
+
+# Config endpoint for custom path bot
+curl http://localhost:8000/pillsbot/config
 
 # With image URL
 curl -X POST "http://localhost:8000/chat" \
