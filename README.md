@@ -419,6 +419,18 @@ You can use these to:
 - Implement stateful conversations
 - Provide user-specific features based on email
 
+### 🧵 Thread-based Conversation Support
+
+BubbleTea now supports thread-based conversations using LiteLLM's threading capabilities. This allows for maintaining conversation context across multiple messages with support for OpenAI Assistants API and fallback for other models.
+
+#### How It Works
+
+1. **Backend Integration**: The backend stores a `thread_id` with each conversation
+2. **Thread Creation**: On first message, if no thread exists, the bot creates one
+3. **Thread Persistence**: The thread_id is stored in the backend for future messages
+4. **Context Maintenance**: All messages in a thread maintain full conversation context
+
+
 ### 💬 Chat History
 
 BubbleTea now supports passing chat history to your bots for context-aware conversations:
@@ -694,6 +706,7 @@ async def my_bot(
 
 - `LLM(model: str, **kwargs)` - Initialize an LLM client
   - `model`: Any model supported by LiteLLM (e.g., "gpt-4", "claude-3-sonnet-20240229")
+  - `assistant_id`: Optional assistant ID for thread-based conversations
   - `**kwargs`: Additional parameters (temperature, max_tokens, etc.)
 
 #### Text Generation Methods:
@@ -711,6 +724,59 @@ async def my_bot(
 #### Image Generation Methods:
 - `generate_image(prompt: str, **kwargs) -> str` - Generate image (sync), returns URL
 - `agenerate_image(prompt: str, **kwargs) -> str` - Generate image (async), returns URL
+
+#### Thread-based Conversation Methods:
+- `create_thread() -> Dict` - Create a new conversation thread
+- `add_message(thread_id, content, role="user") -> Dict` - Add message to thread
+- `run_thread(thread_id, instructions=None) -> str` - Run thread and get response
+- `get_thread_messages(thread_id) -> List[Dict]` - Get all messages in thread
+- `get_thread_status(thread_id, run_id) -> str` - Check thread run status
+
+#### Assistant Creation Methods:
+- `create_assistant(name, instructions, tools, **kwargs) -> str` - Create assistant (sync)
+- `acreate_assistant(name, instructions, tools, **kwargs) -> str` - Create assistant (async)
+
+### ThreadManager Class
+
+A high-level thread management utility that simplifies thread operations:
+
+```python
+from bubbletea_chat import ThreadManager
+
+# Initialize manager
+manager = ThreadManager(
+    assistant_id="asst_xxx",  # Optional: use existing assistant
+    model="gpt-4",
+    storage_path="threads.json"
+)
+
+# Get or create thread for user
+thread_id = manager.get_or_create_thread("user_123")
+
+# Add message
+manager.add_user_message("user_123", "Hello!")
+
+# Get response
+response = manager.get_assistant_response("user_123")
+```
+
+Features:
+- Automatic thread creation and management
+- Persistent thread storage
+- User-to-thread mapping
+- Async support
+- Message history retrieval
+- Assistant creation and management
+
+Methods:
+- `create_assistant(name, instructions, tools, **kwargs) -> str` - Create assistant
+- `async_create_assistant(name, instructions, tools, **kwargs) -> str` - Create assistant (async)
+- `get_or_create_thread(user_id) -> str` - Get or create thread for user
+- `add_user_message(user_id, message) -> bool` - Add user message
+- `get_assistant_response(user_id, instructions=None) -> str` - Get AI response
+- `get_thread_messages(user_id) -> List[Dict]` - Get conversation history
+- `clear_user_thread(user_id)` - Clear a user's thread
+- `clear_all_threads()` - Clear all threads
 
 ### ImageInput Class
 
