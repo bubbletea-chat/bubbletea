@@ -47,6 +47,7 @@ class BotConfig(BaseModel):
     preview_video_url: Optional[str] = Field(None, description="Preview video URL")
     description: Optional[str] = Field(None, description="Markdown description")
     visibility: Optional[Literal["public", "private"]] = Field("public", description="Bot visibility")
+    discoverable: Optional[bool] = Field(True, description="Whether the bot is discoverable in the app store")
     entrypoint: Optional[str] = Field(None, description="Launch context page/action")
     
     # Legacy fields (kept for backward compatibility)
