@@ -47,7 +47,7 @@ class BotConfig(BaseModel):
     preview_video_url: Optional[str] = Field(None, description="Preview video URL")
     description: Optional[str] = Field(None, description="Markdown description")
     visibility: Optional[Literal["public", "private"]] = Field("public", description="Bot visibility")
-    discoverable: Optional[bool] = Field(True, description="Whether the bot is discoverable in the app store")
+    discoverable: Optional[bool] = Field(True, description="Whether the bot is discoverable")
     entrypoint: Optional[str] = Field(None, description="Launch context page/action")
     
     # Legacy fields (kept for backward compatibility)
@@ -59,6 +59,9 @@ class BotConfig(BaseModel):
     
     # CORS configuration (optional)
     cors_config: Optional[Dict[str, Any]] = Field(None, description="Custom CORS configuration")
+    
+    # Example chats for bot
+    example_chats: Optional[List[str]] = Field(None, description="List of example chat messages for the bot")
     
     @validator('name')
     def validate_handle(cls, v):

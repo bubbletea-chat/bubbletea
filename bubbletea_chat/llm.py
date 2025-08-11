@@ -394,15 +394,15 @@ class LLM:
             )
 
             if hasattr(messages, "data") and messages.data:
-                for msg in reversed(messages.data):
-                    if msg.role == "assistant":
-                        print(
-                            f"Assistant message found: {msg.content[0].text.value if msg.content else 'No content'}"
-                        )
-                        if msg.content and len(msg.content) > 0:
-                            return msg.content[0].text.value
+                assistant_messages = [
+                    msg for msg in messages.data if msg.role == "assistant"
+                ]
+                if assistant_messages:
+                    last_msg = assistant_messages[-1]
+                    if last_msg.content and len(last_msg.content) > 0:
+                        return last_msg.content[0].text.value
 
-            # Fallback handling for different response formats
+            # Fallback: handle different response structures
             if isinstance(run_response, str):
                 return run_response
             elif isinstance(run_response, dict):
