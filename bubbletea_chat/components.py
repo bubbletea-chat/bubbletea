@@ -117,7 +117,7 @@ Component = Union[Text, Image, Markdown, Card, Cards, Done, Pill, Pills, Video, 
 class BaseComponent(BaseModel):
     """A unified wrapper for any component, with metadata like thread_id"""
     thread_id: Optional[str] = None
-    payload: Component
+    payload: List[Component]
     
     def __init__(self, payload: Component, thread_id: Optional[str] = None):
         super().__init__(payload=payload, thread_id=thread_id)
