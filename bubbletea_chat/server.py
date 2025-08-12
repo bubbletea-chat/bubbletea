@@ -17,9 +17,32 @@ from .components import Done
 
 
 class BubbleTeaServer:
-    """FastAPI server for hosting BubbleTea chatbots"""
+    """
+    FastAPI server for hosting BubbleTea chatbots
     
-    def __init__(self, chatbot: Optional[ChatbotFunction] = None, port: int = 8000, cors: bool = True, cors_config: Optional[Dict[str, Any]] = None, register_all: bool = True):
+    This class creates and configures a FastAPI server that can host
+    one or multiple chatbot endpoints with automatic CORS, streaming,
+    and configuration management.
+    """
+    
+    def __init__(
+        self, 
+        chatbot: Optional[ChatbotFunction] = None, 
+        port: int = 8000, 
+        cors: bool = True, 
+        cors_config: Optional[Dict[str, Any]] = None, 
+        register_all: bool = True
+    ):
+        """
+        Initialize the BubbleTea server
+        
+        Args:
+            chatbot: Optional specific chatbot to serve
+            port: Port number for the server
+            cors: Enable CORS support
+            cors_config: Custom CORS configuration
+            register_all: Register all decorated chatbots
+        """
         self.app = FastAPI(title="BubbleTea Bot Server")
         self.chatbot = chatbot
         self.port = port
@@ -47,7 +70,12 @@ class BubbleTeaServer:
         self._setup_routes()
     
     def _setup_cors(self, cors_config: Optional[Dict[str, Any]] = None):
-        """Setup CORS middleware with sensible defaults"""
+        """
+        Setup CORS middleware with sensible defaults
+        
+        Args:
+            cors_config: Optional custom CORS configuration
+        """
         default_config = {
             "allow_origins": ["*"],  # Allow all origins in development
             "allow_credentials": True,
@@ -87,7 +115,7 @@ class BubbleTeaServer:
                     response = await bot.handle_request(request)
                     
                     if bot.stream:
-                        # Streaming response
+                        # Streaming response - use Server-Sent Events
                         async def stream_generator():
                             async for component in response:
                                 # Convert component to JSON and wrap in SSE format
@@ -111,7 +139,7 @@ class BubbleTeaServer:
         
         @self.app.get("/health")
         async def health_check():
-            """Health check endpoint"""
+            """Health check endpoint for monitoring"""
             registered_bots = decorators.get_registered_chatbots()
             bots_info = [
                 {
@@ -185,19 +213,34 @@ class BubbleTeaServer:
                     return result
     
     def run(self, host: str = "0.0.0.0"):
-        """Run the server"""
+        """
+        Run the server
+        
+        Args:
+            host: Host address to bind to
+        """
         uvicorn.run(self.app, host=host, port=self.port)
 
 
-def run_server(chatbot: Optional[ChatbotFunction] = None, port: int = 8000, host: str = "0.0.0.0", cors: bool = True, cors_config: Optional[Dict[str, Any]] = None, register_all: bool = True):
+def run_server(
+    chatbot: Optional[ChatbotFunction] = None, 
+    port: int = 8000, 
+    host: str = "0.0.0.0", 
+    cors: bool = True, 
+    cors_config: Optional[Dict[str, Any]] = None, 
+    register_all: bool = True
+):
     """
     Run a FastAPI server for chatbots
+    
+    This is the main entry point for starting your BubbleTea bot server.
+    It automatically handles HTTP endpoints, streaming, and configuration.
     
     Args:
         chatbot: Optional specific chatbot function (for backward compatibility)
                  If None and register_all=True, serves all decorated chatbots
-        port: Port to run the server on
-        host: Host to bind the server to
+        port: Port to run the server on (default: 8000)
+        host: Host to bind the server to (default: "0.0.0.0" for all interfaces)
         cors: Enable CORS support (default: True)
         cors_config: Custom CORS configuration dict with keys:
             - allow_origins: List of allowed origins (default: ["*"])
@@ -206,6 +249,26 @@ def run_server(chatbot: Optional[ChatbotFunction] = None, port: int = 8000, host
             - allow_headers: Allowed headers (default: ["*"])
         register_all: If True, registers all decorated chatbots (default: True)
                       If False, only registers the specified chatbot
+    
+    Examples:
+        # Single bot
+        @chatbot
+        def my_bot(message: str):
+            return Text("Hello!")
+        run_server(my_bot)
+        
+        # Multiple bots
+        @chatbot("bot1")
+        def bot1(message: str): ...
+        @chatbot("bot2")
+        def bot2(message: str): ...
+        run_server()  # Serves both bots
     """
-    server = BubbleTeaServer(chatbot, port, cors=cors, cors_config=cors_config, register_all=register_all)
+    server = BubbleTeaServer(
+        chatbot, 
+        port, 
+        cors=cors, 
+        cors_config=cors_config, 
+        register_all=register_all
+    )
     server.run(host)

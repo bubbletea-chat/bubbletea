@@ -140,6 +140,9 @@ The `BotConfig` class supports extensive configuration options for your bot:
 - `icon_url` (str): 1024x1024 PNG icon URL
 - `icon_emoji` (str): Alternative emoji icon
 - `preview_video_url` (str): Demo video URL
+- `example_chats` (List[str]): Sample prompts to show users
+- `discoverable` (bool): Whether bot appears in public directory (default: True)
+- `entrypoint` (str): Launch context/action for the bot
 
 #### Subscription & Payment
 - `subscription_monthly_price` (int): Price in cents
@@ -369,6 +372,34 @@ The Error component is automatically styled with:
 - Validation errors
 - Service unavailability
 - Rate limiting messages
+
+#### Block Component Example
+
+```python
+from bubbletea_chat import chatbot, Block, Text
+import asyncio
+
+@chatbot
+async def processing_bot(message: str):
+    # Show loading indicator for long-running operation
+    yield Block(timeout=30)  # 30 second timeout
+    
+    # Simulate processing
+    await asyncio.sleep(5)
+    
+    # Replace block with actual response
+    yield Text("Processing complete!")
+```
+
+**Block Component Features:**
+- **timeout** (optional): Maximum wait time in seconds (default: 60)
+- Displays a loading/progress indicator
+- Automatically replaced when next component is yielded
+- Useful for long-running operations like:
+  - API calls
+  - Data processing
+  - File generation
+  - Complex calculations
 
 ### 🔄 Streaming Support
 
@@ -701,6 +732,7 @@ async def my_bot(
 - `bt.Pills(pills: List[Pill])` - A collection of pill items.
 - `bt.Video(url: str)` - Video component
 - `bt.Error(title: str, description: Optional[str] = None, code: Optional[str] = None)` - Error message component
+- `bt.Block(timeout: int = 60)` - Loading/progress indicator for long-running operations
 
 ### LLM Class
 
@@ -726,15 +758,17 @@ async def my_bot(
 - `agenerate_image(prompt: str, **kwargs) -> str` - Generate image (async), returns URL
 
 #### Thread-based Conversation Methods:
-- `create_thread() -> Dict` - Create a new conversation thread
-- `add_message(thread_id, content, role="user") -> Dict` - Add message to thread
-- `run_thread(thread_id, instructions=None) -> str` - Run thread and get response
-- `get_thread_messages(thread_id) -> List[Dict]` - Get all messages in thread
-- `get_thread_status(thread_id, run_id) -> str` - Check thread run status
+- `create_thread(user_uuid: str) -> Optional[str]` - Create a new conversation thread for a user
+- `add_user_message(thread_id: str, message: str) -> bool` - Add user message to thread
+- `get_assistant_response(thread_id: str, message: str) -> Optional[str]` - Get assistant response for the thread
 
-#### Assistant Creation Methods:
-- `create_assistant(name, instructions, tools, **kwargs) -> str` - Create assistant (sync)
-- `acreate_assistant(name, instructions, tools, **kwargs) -> str` - Create assistant (async)
+#### Internal Helper Methods (Refactored):
+The LLM class now uses several internal helper methods to reduce code duplication:
+- `_merge_params(**kwargs)` - Merges default parameters with provided kwargs
+- `_create_user_message(content)` - Creates a user message in the format expected by litellm
+- `_extract_content(response)` - Extracts content from completion response
+- `_extract_stream_chunk(chunk)` - Extracts content from streaming chunks
+- `_extract_id(response)` - Generic ID extraction from various response formats
 
 ### ThreadManager Class
 
@@ -795,19 +829,62 @@ ImageInput(
 ```
 
 ### Server
-```
+
+```python
 if __name__ == "__main__":
     # Run the chatbot server
+    bt.run_server(port=8000, host="0.0.0.0")
+    
+    # Or run specific bots only
     bt.run_server(my_bot, port=8000, host="0.0.0.0")
+    
+    # Or run multiple specific bots
+    bt.run_server([bot1, bot2], port=8000, host="0.0.0.0")
 ```
 
-- Runs a chatbot server on port 8000 and binds to host 0.0.0.0
-  - Automatically creates a `/chat` endpoint for your bot
-  - The `/chat` endpoint accepts POST requests with chat messages
+#### Server Endpoints
+
+- **`/chat`** - Default chat endpoint (POST)
+  - Accepts chat messages with optional images, user context
   - Supports both streaming and non-streaming responses
+  
+- **`/config`** - Bot configuration endpoint (GET)
+  - Returns the bot's BotConfig as JSON
+  - Used by the platform for bot discovery and setup
+  
+- **`/health`** - Health check endpoint (GET)
+  - Returns server status and registered bots
+  - Useful for monitoring and debugging
+  
+- **`/<bot-route>`** - Custom bot routes (POST)
+  - Each bot can have its own unique route
+  - Example: `/support`, `/sales`, `/assistant`
+  
+- **`/<bot-route>/config`** - Bot-specific config (GET)
+  - Configuration for bots with custom routes
+  - Example: `/support/config`
+
+#### Advanced Server Configuration
+
+```python
+# Custom CORS configuration
+bt.run_server(
+    port=8000,
+    cors_config={
+        "allow_origins": ["https://bubbletea.app"],
+        "allow_credentials": True,
+        "allow_methods": ["GET", "POST"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+)
+
+# Disable CORS (not recommended)
+bt.run_server(port=8000, cors=False)
+```
 
 ## Environment Variables
 
+### LLM Provider API Keys
 To use different LLM providers, set the appropriate API keys:
 
 ```bash
@@ -824,6 +901,17 @@ export GEMINI_API_KEY=your-gemini-api-key
 ```
 
 For more providers and configuration options, see the [LiteLLM documentation](https://docs.litellm.ai/docs/providers).
+
+### BubbleTea Platform Configuration
+For bot authentication and backend configuration:
+
+```bash
+# Bot authentication key (optional)
+export BUBBLETEA_API_KEY=your-bot-api-key
+
+# Custom backend URL (defaults to http://localhost:8010)
+export BUBBLETEA_API_URL=https://your-backend.com
+```
 
 ## Custom LLM Integration
 
@@ -863,8 +951,17 @@ Start your bot:
 python my_bot.py
 ```
 
-Your bot will automatically create a `/chat` endpoint that accepts POST requests. This is the standard endpoint for all BubbleTea chatbots.
+Your bot will automatically create endpoints for chat and configuration.
 
+### Test Endpoints
+
+#### Health Check
+```bash
+# Check server status and registered bots
+curl http://localhost:8000/health
+```
+
+#### Chat Endpoint
 Test with curl:
 
 ```bash
@@ -929,6 +1026,72 @@ bt.run_server(my_bot, port=8000, cors_config={
 ```python
 # Not recommended, but possible
 bt.run_server(my_bot, port=8000, cors=False)
+```
+
+## Advanced Features
+
+### Managing Multiple Bots
+
+```python
+import bubbletea_chat as bt
+
+# Get all registered chatbots
+bots = bt.get_registered_chatbots()
+for route, bot in bots.items():
+    print(f"Bot registered at: {route}")
+
+# Get bot configurations
+configs = bt.get_bot_configs()
+for route, config in configs.items():
+    print(f"Config for {route}: {config.name}")
+```
+
+### Thread Management with Persistence
+
+For maintaining conversation context across server restarts:
+
+```python
+from bubbletea_chat import chatbot, Text, LLM
+
+@chatbot
+async def persistent_bot(message: str, user_uuid: str = None, thread_id: str = None):
+    llm = LLM(model="gpt-4", assistant_id="asst_xxx")
+    
+    # Thread ID is provided by the backend if available
+    if not thread_id and user_uuid:
+        # Create new thread for user
+        thread_id = llm.create_thread(user_uuid)
+        # Return thread_id in response for backend to store
+        yield Text(f"Starting new conversation!", thread_id=thread_id)
+    
+    if thread_id:
+        # Continue conversation in existing thread
+        response = llm.get_assistant_response(thread_id, message)
+        yield Text(response)
+    else:
+        # Fallback to stateless response
+        response = await llm.acomplete(message)
+        yield Text(response)
+```
+
+### Custom Request Parameters
+
+Your bot can accept additional parameters from the request:
+
+```python
+@chatbot
+def advanced_bot(
+    message: str,
+    user_uuid: str = None,
+    conversation_uuid: str = None,
+    user_email: str = None,
+    chat_history: list = None,
+    subscription_status: str = None,
+    thread_id: str = None,
+    images: list = None
+):
+    # All parameters are optional and provided by BubbleTea when available
+    return Text(f"Hello {user_email or 'there'}!")
 ```
 
 ## Contributing

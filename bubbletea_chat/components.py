@@ -1,5 +1,5 @@
 """
-BubbleTea component classes for building rich chatbot responses
+BubbleTea UI Components
 """
 
 from typing import List, Literal, Optional, Union
@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 
 class Text(BaseModel):
-    """A text component for displaying plain text messages"""
+    """Plain text message component"""
     type: Literal["text"] = "text"
     content: str
 
@@ -16,7 +16,7 @@ class Text(BaseModel):
 
 
 class Image(BaseModel):
-    """An image component for displaying images"""
+    """Image display component"""
     type: Literal["image"] = "image"
     url: str
     alt: Optional[str] = None
@@ -27,7 +27,7 @@ class Image(BaseModel):
 
 
 class Markdown(BaseModel):
-    """A markdown component for rich text formatting"""
+    """Rich text with markdown formatting"""
     type: Literal["markdown"] = "markdown"
     content: str
 
@@ -36,19 +36,20 @@ class Markdown(BaseModel):
 
 
 class Card(BaseModel):
-    """A single card component for displaying an image"""
+    """Interactive card with image and text"""
     type: Literal["card"] = "card"
     image: Image
     text: Optional[str] = None
     markdown: Optional[Markdown] = None
     card_value: Optional[str] = None
 
-    def __init__(self, image: Image, text: Optional[str] = None, markdown: Optional[Markdown] = None, card_value: Optional[str] = None):
+    def __init__(self, image: Image, text: Optional[str] = None, 
+                 markdown: Optional[Markdown] = None, card_value: Optional[str] = None):
         super().__init__(image=image, text=text, markdown=markdown, card_value=card_value)
 
 
 class Cards(BaseModel):
-    """A cards component for displaying multiple cards in a layout"""
+    """Grid layout for multiple cards"""
     type: Literal["cards"] = "cards"
     orient: Literal["wide", "tall"] = "wide"
     cards: List[Card]
@@ -58,12 +59,12 @@ class Cards(BaseModel):
 
 
 class Done(BaseModel):
-    """A done component to signal end of streaming"""
+    """Stream completion signal"""
     type: Literal["done"] = "done"
 
 
 class Pill(BaseModel):
-    """A single pill component for displaying text"""
+    """Clickable pill button"""
     type: Literal["pill"] = "pill"
     text: str
     pill_value: Optional[str] = None
@@ -73,7 +74,7 @@ class Pill(BaseModel):
 
 
 class Pills(BaseModel):
-    """A pills component for displaying multiple pill items in a layout"""
+    """Group of pill buttons"""
     type: Literal["pills"] = "pills"
     pills: List[Pill]
 
@@ -82,7 +83,7 @@ class Pills(BaseModel):
 
 
 class Video(BaseModel):
-    """A video component for displaying video content"""
+    """Video display component"""
     type: Literal["video"] = "video"
     url: str
 
@@ -91,16 +92,16 @@ class Video(BaseModel):
 
 
 class Block(BaseModel):
-    """A block component to indicate long-running operations"""
+    """Loading indicator"""
     type: Literal["block"] = "block"
-    timeout: int = 60  # seconds, default 60
+    timeout: int = 60
 
     def __init__(self, timeout: int = 60):
         super().__init__(timeout=timeout)
 
 
 class Error(BaseModel):
-    """An error component for displaying error messages"""
+    """Error message display"""
     type: Literal["error"] = "error"
     title: str
     description: Optional[str] = None
@@ -110,14 +111,14 @@ class Error(BaseModel):
         super().__init__(title=title, description=description, code=code)
 
 
-# Type alias for all components
 Component = Union[Text, Image, Markdown, Card, Cards, Done, Pill, Pills, Video, Block, Error]
 
-
 class BaseComponent(BaseModel):
-    """A unified wrapper for any component, with metadata like thread_id"""
+    """Internal wrapper for components with metadata"""
     thread_id: Optional[str] = None
     payload: List[Component]
     
-    def __init__(self, payload: Component, thread_id: Optional[str] = None):
+    def __init__(self, payload: Union[Component, List[Component]], thread_id: Optional[str] = None):
+        if not isinstance(payload, list):
+            payload = [payload]
         super().__init__(payload=payload, thread_id=thread_id)
