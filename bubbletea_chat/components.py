@@ -8,6 +8,7 @@ from pydantic import BaseModel
 
 class Text(BaseModel):
     """Plain text message component"""
+
     type: Literal["text"] = "text"
     content: str
 
@@ -17,17 +18,21 @@ class Text(BaseModel):
 
 class Image(BaseModel):
     """Image display component"""
+
     type: Literal["image"] = "image"
     url: str
     alt: Optional[str] = None
     content: Optional[str] = None
 
-    def __init__(self, url: str, alt: Optional[str] = None, content: Optional[str] = None):
+    def __init__(
+        self, url: str, alt: Optional[str] = None, content: Optional[str] = None
+    ):
         super().__init__(url=url, alt=alt, content=content)
 
 
 class Markdown(BaseModel):
     """Rich text with markdown formatting"""
+
     type: Literal["markdown"] = "markdown"
     content: str
 
@@ -37,19 +42,28 @@ class Markdown(BaseModel):
 
 class Card(BaseModel):
     """Interactive card with image and text"""
+
     type: Literal["card"] = "card"
     image: Image
     text: Optional[str] = None
     markdown: Optional[Markdown] = None
     card_value: Optional[str] = None
 
-    def __init__(self, image: Image, text: Optional[str] = None, 
-                 markdown: Optional[Markdown] = None, card_value: Optional[str] = None):
-        super().__init__(image=image, text=text, markdown=markdown, card_value=card_value)
+    def __init__(
+        self,
+        image: Image,
+        text: Optional[str] = None,
+        markdown: Optional[Markdown] = None,
+        card_value: Optional[str] = None,
+    ):
+        super().__init__(
+            image=image, text=text, markdown=markdown, card_value=card_value
+        )
 
 
 class Cards(BaseModel):
     """Grid layout for multiple cards"""
+
     type: Literal["cards"] = "cards"
     orient: Literal["wide", "tall"] = "wide"
     cards: List[Card]
@@ -60,11 +74,13 @@ class Cards(BaseModel):
 
 class Done(BaseModel):
     """Stream completion signal"""
+
     type: Literal["done"] = "done"
 
 
 class Pill(BaseModel):
     """Clickable pill button"""
+
     type: Literal["pill"] = "pill"
     text: str
     pill_value: Optional[str] = None
@@ -75,6 +91,7 @@ class Pill(BaseModel):
 
 class Pills(BaseModel):
     """Group of pill buttons"""
+
     type: Literal["pills"] = "pills"
     pills: List[Pill]
 
@@ -84,6 +101,7 @@ class Pills(BaseModel):
 
 class Video(BaseModel):
     """Video display component"""
+
     type: Literal["video"] = "video"
     url: str
 
@@ -93,6 +111,7 @@ class Video(BaseModel):
 
 class Block(BaseModel):
     """Loading indicator"""
+
     type: Literal["block"] = "block"
     timeout: int = 60
 
@@ -102,23 +121,34 @@ class Block(BaseModel):
 
 class Error(BaseModel):
     """Error message display"""
+
     type: Literal["error"] = "error"
     title: str
     description: Optional[str] = None
     code: Optional[str] = None
 
-    def __init__(self, title: str, description: Optional[str] = None, code: Optional[str] = None):
+    def __init__(
+        self, title: str, description: Optional[str] = None, code: Optional[str] = None
+    ):
         super().__init__(title=title, description=description, code=code)
 
 
-Component = Union[Text, Image, Markdown, Card, Cards, Done, Pill, Pills, Video, Block, Error]
+Component = Union[
+    Text, Image, Markdown, Card, Cards, Done, Pill, Pills, Video, Block, Error
+]
+
 
 class BaseComponent(BaseModel):
     """Internal wrapper for components with metadata"""
+
     thread_id: Optional[str] = None
     payload: List[Component]
-    
-    def __init__(self, payload: Union[Component, List[Component]], thread_id: Optional[str] = None):
+
+    def __init__(
+        self,
+        payload: Union[Component, List[Component]],
+        thread_id: Optional[str] = None,
+    ):
         if not isinstance(payload, list):
             payload = [payload]
         super().__init__(payload=payload, thread_id=thread_id)

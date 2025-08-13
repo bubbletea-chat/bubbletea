@@ -11,7 +11,6 @@ Core Decorators:
     @config - Define bot configuration and metadata
 """
 
-import asyncio
 import inspect
 from typing import (
     Any,
@@ -19,29 +18,27 @@ from typing import (
     Dict,
     List,
     AsyncGenerator,
-    Generator,
     Union,
     Tuple,
     Optional,
 )
-from functools import wraps
 
-from .components import Component, Done, BaseComponent
-from .schemas import ComponentChatRequest, ComponentChatResponse, ImageInput, BotConfig
+from .components import Component, Done
+from .schemas import ComponentChatRequest, ComponentChatResponse, ImageInput
 
 # Global registries for managing chatbots and configurations
 _config_function: Optional[Tuple[Callable, str]] = None  # Legacy support
-_chatbot_registry: Dict[str, 'ChatbotFunction'] = {}  # All registered chatbots
+_chatbot_registry: Dict[str, "ChatbotFunction"] = {}  # All registered chatbots
 _bot_config_registry: Dict[str, Callable] = {}  # Bot-specific configurations
 
 
 class ChatbotFunction:
     """
     Wrapper class for chatbot functions.
-    
+
     Handles function execution, parameter injection, streaming,
     and configuration management for chatbot endpoints.
-    
+
     Attributes:
         func: The wrapped chatbot function
         name: Bot name for identification
@@ -51,13 +48,15 @@ class ChatbotFunction:
         is_generator: Whether the function yields responses
     """
 
-    def __init__(self, 
-                 func: Callable, 
-                 name: str = None, 
-                 stream: bool = None, 
-                 url_path: str = None):
+    def __init__(
+        self,
+        func: Callable,
+        name: str = None,
+        stream: bool = None,
+        url_path: str = None,
+    ):
         """Initialize a chatbot function wrapper.
-        
+
         Args:
             func: The function to wrap
             name: Optional bot name (defaults to function name)
@@ -68,30 +67,29 @@ class ChatbotFunction:
         self.name = name or func.__name__
         self.url_path = url_path or "/chat"
         self.is_async = inspect.iscoroutinefunction(func)
-        self.is_generator = (
-            inspect.isgeneratorfunction(func) or 
-            inspect.isasyncgenfunction(func)
-        )
+        self.is_generator = inspect.isgeneratorfunction(
+            func
+        ) or inspect.isasyncgenfunction(func)
         self.stream = stream if stream is not None else self.is_generator
         self._config_func = None
-    
+
     def config(self, func: Callable) -> Callable:
         """
         Decorator to attach configuration to this specific bot.
-        
+
         Allows bot-specific configuration without global config.
-        
+
         Args:
             func: Configuration function returning BotConfig
-            
+
         Returns:
             The configuration function (unchanged)
-            
+
         Example:
             >>> @bt.chatbot("weather-bot")
             ... def weather_bot(message: str):
             ...     return bt.Text("Current weather...")
-            ... 
+            ...
             >>> @weather_bot.config
             ... def config():
             ...     return BotConfig(
@@ -112,14 +110,14 @@ class ChatbotFunction:
         user_uuid: str = None,
         conversation_uuid: str = None,
         chat_history: Union[List[Dict[str, Any]], str] = None,
-        thread_id: str = None
+        thread_id: str = None,
     ) -> Union[List[Component], AsyncGenerator[Component, None]]:
         """
         Execute the wrapped chatbot function with smart parameter injection.
-        
+
         Automatically provides only the parameters that the function accepts,
         allowing for flexible function signatures.
-        
+
         Args:
             message: User's input message
             images: Optional list of images from user
@@ -128,7 +126,7 @@ class ChatbotFunction:
             conversation_uuid: Conversation identifier
             chat_history: Previous messages in conversation
             thread_id: Thread identifier for grouped conversations
-            
+
         Returns:
             List of components or async generator for streaming
         """
@@ -153,7 +151,7 @@ class ChatbotFunction:
         if "chat_history" in params:
             # Check if the function signature expects a specific type
             param_annotation = sig.parameters["chat_history"].annotation
-            if param_annotation == str or param_annotation == Optional[str]:
+            if param_annotation is str or param_annotation == Optional[str]:
                 # Function expects string, convert list to string if needed
                 if isinstance(chat_history, list):
                     kwargs["chat_history"] = str(chat_history)
@@ -196,7 +194,7 @@ class ChatbotFunction:
             user_uuid=request.user_uuid,
             conversation_uuid=request.conversation_uuid,
             chat_history=request.chat_history,
-            thread_id=request.thread_id
+            thread_id=request.thread_id,
         )
 
         if self.stream:
@@ -216,40 +214,38 @@ class ChatbotFunction:
 
 
 def chatbot(
-    name_or_url: Union[str, Callable] = None, 
-    stream: bool = None, 
-    name: str = None
+    name_or_url: Union[str, Callable] = None, stream: bool = None, name: str = None
 ) -> Union[ChatbotFunction, Callable[[Callable], ChatbotFunction]]:
     """
     Transform any function into a BubbleTea chatbot.
-    
+
     This decorator is the heart of BubbleTea. It converts regular Python
     functions into fully-featured chatbot endpoints with automatic:
     - HTTP endpoint creation
     - Streaming support detection
     - Parameter injection
     - Response formatting
-    
+
     Args:
         name_or_url: URL path for the bot (e.g., "weather" → /weather)
                     Or the function itself when used without parentheses
         stream: Force streaming mode (auto-detected if None)
         name: Explicit bot name (defaults to function name)
-        
+
     Returns:
         ChatbotFunction wrapper or decorator function
-        
+
     Examples:
         Simple bot:
             >>> @chatbot
             ... def echo_bot(message: str):
             ...     return Text(f"Echo: {message}")
-            
+
         Custom endpoint:
             >>> @chatbot("weather")
             ... def weather_bot(message: str, user_uuid: str):
             ...     return Text(f"Weather for user {user_uuid}")
-            
+
         Streaming bot:
             >>> @chatbot(stream=True)
             ... async def stream_bot(message: str):
@@ -261,7 +257,7 @@ def chatbot(
         # Determine URL path
         url_path = None
         bot_name = name
-        
+
         if isinstance(name_or_url, str):
             # If it doesn't start with /, treat it as URL path and prepend /
             if not name_or_url.startswith("/"):
@@ -271,33 +267,35 @@ def chatbot(
             # If no explicit name provided, derive from URL
             if not bot_name:
                 bot_name = name_or_url.strip("/").replace("-", "_").replace("/", "_")
-        
-        chatbot_func = ChatbotFunction(func, name=bot_name, stream=stream, url_path=url_path)
-        
+
+        chatbot_func = ChatbotFunction(
+            func, name=bot_name, stream=stream, url_path=url_path
+        )
+
         # Check if this URL path is already registered
         if chatbot_func.url_path in _chatbot_registry:
             raise ValueError(
                 f"A chatbot is already registered at URL path '{chatbot_func.url_path}'. "
                 f"Each chatbot must have a unique URL path."
             )
-        
+
         # Register the chatbot function in the global registry
         _chatbot_registry[chatbot_func.url_path] = chatbot_func
-        
+
         return chatbot_func
 
     # Allow using @chatbot without parentheses
     if callable(name_or_url):
         func = name_or_url
         chatbot_func = ChatbotFunction(func)
-        
+
         # Check if this URL path is already registered
         if chatbot_func.url_path in _chatbot_registry:
             raise ValueError(
                 f"A chatbot is already registered at URL path '{chatbot_func.url_path}'. "
                 f"Each chatbot must have a unique URL path."
             )
-        
+
         _chatbot_registry[chatbot_func.url_path] = chatbot_func
         return chatbot_func
 
@@ -307,10 +305,10 @@ def chatbot(
 def get_registered_chatbots() -> Dict[str, ChatbotFunction]:
     """
     Get all registered chatbot functions.
-    
+
     Returns:
         Dictionary mapping URL paths to ChatbotFunction instances
-        
+
     Note:
         This is primarily used internally by the server.
         Returns a copy to prevent external modification.
@@ -321,10 +319,10 @@ def get_registered_chatbots() -> Dict[str, ChatbotFunction]:
 def get_bot_configs() -> Dict[str, Callable]:
     """
     Get all registered bot-specific configurations.
-    
+
     Returns:
         Dictionary mapping URL paths to configuration functions
-        
+
     Note:
         Used internally for serving bot configurations.
     """
@@ -334,17 +332,17 @@ def get_bot_configs() -> Dict[str, Callable]:
 def config(path: str = "/config") -> Union[Callable, Callable[[Callable], Callable]]:
     """
     Define global bot configuration.
-    
+
     Sets up a configuration endpoint that returns bot metadata,
     settings, and capabilities. This is used by BubbleTea to
     understand how to interact with your bot.
-    
+
     Args:
         path: Custom path for config endpoint (default: /config)
-        
+
     Returns:
         Decorator function or decorated function
-        
+
     Example:
         >>> @config()
         ... def get_config():
@@ -359,7 +357,7 @@ def config(path: str = "/config") -> Union[Callable, Callable[[Callable], Callab
         ...         visibility="public",
         ...         authorization="none"
         ...     )
-        
+
     Note:
         For multiple bots, use bot-specific config instead:
         @bot_name.config

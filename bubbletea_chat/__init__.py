@@ -7,11 +7,11 @@ Seamlessly integrate with 100+ LLMs through LiteLLM support.
 
 Quick Start:
     >>> import bubbletea_chat as bt
-    >>> 
+    >>>
     >>> @bt.chatbot
     >>> def my_bot(message: str):
     ...     return bt.Text(f"Echo: {message}")
-    >>> 
+    >>>
     >>> bt.run_server(my_bot)
 
 Features:
@@ -81,13 +81,13 @@ __all__ = [
 def __getattr__(name: str):
     """
     Lazy load optional dependencies to improve import performance.
-    
+
     Args:
         name: Attribute name to load
-        
+
     Returns:
         The requested attribute
-        
+
     Raises:
         ImportError: If LiteLLM is not installed
         AttributeError: If attribute doesn't exist
@@ -95,6 +95,7 @@ def __getattr__(name: str):
     if name == "LLM":
         try:
             from .llm import LLM
+
             return LLM
         except ImportError:
             raise ImportError(
