@@ -3,8 +3,6 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-bubbletea.chat-purple.svg)](https://bubbletea.chat)
-[![npm version](https://img.shields.io/npm/v/bubbletea-chat.svg)](https://www.npmjs.com/package/bubbletea-chat)
-[![Discord](https://img.shields.io/discord/1234567890?color=7289da&label=Discord&logo=discord&logoColor=white)](https://discord.gg/bubbletea)
 
 > Platform for Developers
 
