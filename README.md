@@ -63,20 +63,6 @@ if __name__ == "__main__":
 python my_first_bot.py
 # Your bot is now running at http://localhost:8000
 ```
-
-#### Step 4: Register with BubbleTea
-1. Go to [bubbletea.chat](https://bubbletea.chat)
-2. Sign up/Login with your email
-3. Chat with BT Agent: `"Register my bot: my-echo-bot at http://localhost:8000/chat, streaming"`
-
-#### Step 5: Share Your Bot
-Your bot is now live at:
-```
-https://bubbletea.chat/my-echo-bot
-```
-
-**🎉 Congratulations!** You've just deployed your first AI bot to the web!
-
 ---
 
 ## Overview
@@ -134,33 +120,64 @@ Enter your email address and we'll send you a verification code. No passwords ne
 
 [Sign Up Now →](https://bubbletea.chat/)
 
-#### 2️⃣ Meet BT Agent - Your Bot Manager
-BT Agent is your AI assistant for managing bots. Use natural language to register, list, and manage your bots.
+#### 2️⃣ Quickstart - E2E Echobot
+Get your first bot running in minutes. This complete example shows you how to build, deploy, and share a working chatbot in just 3 steps.
 
-**Example commands:**
-- `"List all available bots"` - Shows all bots you can chat with
-- `"Register my bot: weather-bot at http://myserver.com:8000/chat, streaming"` - Registers your custom bot
-- `"Show my registered bots"` - Displays all bots you've created
-- `"Delete weather-bot"` - Removes a bot from your account
-- `"Update weather-bot description: A helpful weather forecasting assistant"` - Updates bot details
+**Step 1: Create an Echo Bot**
 
-**Pro tip:** BT Agent understands context, so you can ask follow-up questions naturally!
+First, install the Bubbletea SDK and create a simple bot that echoes messages back to users. The @bt.chatbot decorator automatically handles all the HTTP endpoint setup for you.
+```
+# Install SDK with LLM support
+pip install 'bubbletea-chat[llm]'
 
-#### 3️⃣ Get Your Public URL
-Once registered, your bot gets a permanent public URL that you can share with anyone:
+# echobot.py
+import bubbletea_chat as bt
+
+@bt.chatbot
+def echo_bot(message: str):
+    # Simple echo bot
+    return bt.Text(f"Echo: {message}")
+
+if __name__ == "__main__":
+    # Creates /chat endpoint automatically
+    bt.run_server(echo_bot, port=8000, host="0.0.0.0")
+```
+
+#### Step 2: Deploy with ngrok or Replit
+Now make your bot accessible from the internet. Choose either ngrok for local development or Replit for instant cloud hosting. Both options are free and take less than a minute to set up.
 
 ```
-https://bubbletea.chat/your-bot-name
+# Install ngrok: https://ngrok.com/download
+# Start your bot locally
+python echobot.py
+
+# In another terminal, expose it to internet
+ngrok http 8000
+
+# Your bot URL will be: https://abc123.ngrok-free.app
 ```
 
 **URL Features:**
-- Permanent link that never expires
-- Works on any device (mobile, tablet, desktop)
-- No authentication required for public bots
-- SEO-friendly for better discoverability
+#### Option B: Deploy on Replit (Cloud Hosting)
+- Replit provides free, always-on hosting with zero configuration:
+- Go to replit.com and create a new Python repl
+- Copy your bot code into main.py
+- Click "Run" to start your bot
+- Get instant URL: https://your-bot.username.repl.co
+- Free hosting, SSL included, always online
+- Click "Deploy" button and ensure deployment type is set to "Public"
 
-#### 4️⃣ Share & Track
-Share your bot URL with users. All conversations are saved, and users can access their chat history from their personal dashboard. Your bot will appear in their bot list for easy access.
+#### Step 3: Register Your Bot & Access Everywhere
+
+Finally, register your bot through the Developer Dashboard to make it accessible to users:
+
+
+- Go to https://bubbletea.chat/developer
+- Enable Developer Mode to get your API key
+- Use the API or dashboard UI to register your bot
+- Your bot is now accessible at:
+- 🌐 Web: https://bubbletea.chat/echobot
+- 📱 iOS & Android: Bubbletea mobile app
 
 **Dashboard Features:**
 - View all chat histories in one place
@@ -169,25 +186,6 @@ Share your bot URL with users. All conversations are saved, and users can access
 - Monitor bot usage statistics
 - Manage multiple bots from a single interface
 
-### Using BT Agent
-
-BT Agent is your conversational interface for managing bots. Chat naturally to:
-
-#### Common Commands
-- `"List all bots"`
-- `"Show my registered bots"`
-- `"Register my bot: [bot-name] at [url], [streaming/non streaming]"`
-- `"Update my bot settings"`
-
-#### What Happens
-- Bot gets registered to your account
-- Receives public URL instantly
-- Appears in user dashboards
-- Conversations are tracked
-
-[Chat with BT Agent →](https://bubbletea.chat/bt-agent)
-
----
 
 ## Types of Bots
 
@@ -376,26 +374,7 @@ yield bt.Image(image_url)
 > **Note:** The BT package automatically creates these endpoints for your bot:
 > - `/chat` - Main bot endpoint for BubbleTea integration
 > - `/docs` - Swagger API documentation
->
-> When registering with BT Agent, provide your complete bot URL including the `/chat` endpoint (e.g., `https://my-bot-api.com/chat`).
 
-### 🤖 BT Agent - Bot Management
-
-Your AI assistant for registering and managing bots.
-
-BT Agent is a built-in conversational interface that helps you manage your bots without writing code.
-
-#### Common Commands
-- `"Register my bot at http://localhost:8000/chat"`
-- `"List all my bots"`
-- `"Update bot description"`
-
-#### Features
-- Natural language commands
-- Instant bot registration
-- Bot discovery and search
-
-[Try BT Agent →](https://bubbletea.chat/bt-agent)
 
 ### 📚 Developer Resources
 
@@ -1196,7 +1175,7 @@ Found a bug? Report it on [GitHub Issues](https://github.com/bubbletea/issues).
 
 Join developers building the next generation of AI assistants.
 
-[Get Started Free](https://bubbletea.chat/signup) | [Try BT Agent](https://bubbletea.chat/bt-agent) | [Join Discord](https://discord.gg/bubbletea)
+[Get Started Free](https://bubbletea.chat/login)
 
 ### Quick Links
 - 📚 [Full Documentation](https://docs.bubbletea.chat)
