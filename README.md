@@ -1143,15 +1143,6 @@ A: White-labeling is available on enterprise plans.
 
 ### Join Our Growing Community
 
-#### 💬 Discord Community
-Join 5,000+ developers building AI bots:
-[discord.gg/bubbletea](https://discord.gg/bubbletea)
-
-- Get help from the community
-- Share your bots
-- Participate in hackathons
-- Early access to features
-
 #### 📚 Resources
 - [Documentation](https://docs.bubbletea.chat)
 - [Video Tutorials](https://youtube.com/bubbletea)
@@ -1162,7 +1153,7 @@ Join 5,000+ developers building AI bots:
 We welcome contributions! See our [Contributing Guide](https://github.com/bubbletea/contributing).
 
 #### 📧 Support Channels
-- **Community Support**: Discord, GitHub Discussions
+- **Community Support**: GitHub Discussions
 - **Email Support**: support@bubbletea.chat
 - **Enterprise Support**: enterprise@bubbletea.chat
 
