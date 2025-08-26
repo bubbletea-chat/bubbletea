@@ -1,132 +1,30 @@
-# BubbleTea
+# Documentation
 
-[![Python 3.9+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-bubbletea.chat-purple.svg)](https://bubbletea.chat)
+## Introduction
 
-> Platform for Developers
+### 1. Intro Concept - Frontend for your AI Agent
 
-**The Frontend Platform for AI Agents & Chatbots**
+Bubbletea is the **frontend platform for AI agents & chatbots**. Share your AI creations with the world through beautiful, instant chat interfaces. Build your bot in any language, host it anywhere, and Bubbletea provides the user interface.
 
-Share your AI creations with the world through beautiful, instant chat interfaces.
+- No frontend development needed
+- Share bots with simple URLs
+- Professional UI out of the box
+- Built-in user management & history
 
----
+### 2. Quickstart - E2E Echobot
 
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Quick Start Guide](#quick-start-guide)
-- [How to Use](#how-to-use)
-- [Types of Bots](#types-of-bots)
-- [Developer Tools](#developer-tools)
-- [API Reference](#api-reference)
-- [Deployment Guide](#deployment-guide)
-- [Examples](#examples)
-- [Component Documentation](#component-documentation)
-- [Troubleshooting Guide](#troubleshooting-guide)
-- [Performance Best Practices](#performance-best-practices)
-- [Security Guidelines](#security-guidelines)
-- [FAQ](#faq)
-- [Community & Support](#community--support)
-
----
-
-## Quick Start Guide
-
-### 🚀 Build Your First Bot in 5 Minutes
-
-Get your AI bot live on the web in just a few steps:
-
-#### Step 1: Install the SDK
-```bash
-pip install bubbletea-chat
-```
-
-#### Step 2: Create Your Bot
-Create a file `my_first_bot.py`:
-
-```python
-from bubbletea_chat import bt
-
-@bt.chatbot
-async def echo_bot(message: str):
-    """A simple bot that echoes messages"""
-    yield bt.Text(f"You said: {message}")
-    yield bt.Text("I'm your first BubbleTea bot! 🎉")
-
-if __name__ == "__main__":
-    bt.run_server(echo_bot, port=8000)
-```
-
-#### Step 3: Run Your Bot
-```bash
-python my_first_bot.py
-# Your bot is now running at http://localhost:8000
-```
----
-
-## Overview
-
-### What is BubbleTea?
-
-BubbleTea is a frontend platform that gives your AI agents and chatbots a home on the web. Think of it as the "user interface layer" for AI - where developers can instantly share their creations with the world through beautiful, accessible chat interfaces.
-
-### 🎯 Core Purpose
-
-- **Instant web interface for any AI bot** - Get a professional chat UI without writing frontend code
-- **Share bots via simple URLs** - Each bot gets its own public URL at `bubbletea.chat/your-bot-name`
-- **Unified chat experience for users** - Consistent, polished interface across all bots
-- **Conversation history & user dashboard** - Users can access all their chats in one place
-
-### 💡 Key Benefits
-
-- **No frontend development needed** - Focus on your bot's logic, not UI code
-- **Professional UI out of the box** - Mobile-friendly, accessible, and beautiful
-- **Focus on AI logic, not UI code** - Build in any language, deploy anywhere
-- **Built-in user management** - Authentication, sessions, and history handled for you
-
-> **Note:** BubbleTea backend follows specific standards for bot integration. Check out the [Developer Tools](#developer-tools) section to learn about the API specifications and SDK.
-
-### Bot Flow
-
-Your bot connects to a foundational model, and probably contains some unique agentic functionality. It then connects to BubbleTea's API, which in turn, connects to a frontend.
-
-### Who Benefits?
-
-#### 🤖 For Bot Creators
-Build your AI bot in any language, host it anywhere, and BubbleTea provides the chat interface
-
-#### 🌍 For End Users
-Access all your favorite AI bots in one place with a consistent, beautiful interface
-
-#### 🛡️ Platform Benefits
-Secure authentication, conversation history, and a unified dashboard for all interactions
-
----
-
-## How to Use
-
-### Getting Started with BubbleTea
-
-Your journey from sign-up to sharing your first bot.
-
-#### 1️⃣ Sign Up with Email
-Enter your email address and we'll send you a verification code. No passwords needed!
-
-**What happens next:**
-- You'll receive a 6-digit verification code via email
-- Enter the code to access your dashboard
-- Your account is automatically created with secure authentication
-
-[Sign Up Now →](https://bubbletea.chat/)
-
-#### 2️⃣ Quickstart - E2E Echobot
 Get your first bot running in minutes. This complete example shows you how to build, deploy, and share a working chatbot in just 3 steps.
 
-**Step 1: Create an Echo Bot**
+**🎬 Video Demonstration**
+
+Watch this step-by-step video guide that walks you through the entire process:
+[Bubbletea Quickstart Tutorial](https://www.youtube.com/embed/Op5cbkJylm8)
+
+#### Step 1: Create an Echo Bot
 
 First, install the Bubbletea SDK and create a simple bot that echoes messages back to users. The @bt.chatbot decorator automatically handles all the HTTP endpoint setup for you.
-```
+
+```python
 # Install SDK with LLM support
 pip install 'bubbletea-chat[llm]'
 
@@ -144,9 +42,12 @@ if __name__ == "__main__":
 ```
 
 #### Step 2: Deploy with ngrok or Replit
+
 Now make your bot accessible from the internet. Choose either ngrok for local development or Replit for instant cloud hosting. Both options are free and take less than a minute to set up.
 
-```
+**Option A: Deploy with ngrok (Local Development)**
+
+```bash
 # Install ngrok: https://ngrok.com/download
 # Start your bot locally
 python echobot.py
@@ -157,10 +58,11 @@ ngrok http 8000
 # Your bot URL will be: https://abc123.ngrok-free.app
 ```
 
-**URL Features:**
-#### Option B: Deploy on Replit (Cloud Hosting)
-- Replit provides free, always-on hosting with zero configuration:
-- Go to replit.com and create a new Python repl
+**Option B: Deploy on Replit (Cloud Hosting)**
+
+Replit provides free, always-on hosting with zero configuration:
+
+- Go to [replit.com](https://replit.com) and create a new Python repl
 - Copy your bot code into main.py
 - Click "Run" to start your bot
 - Get instant URL: https://your-bot.username.repl.co
@@ -171,1009 +73,888 @@ ngrok http 8000
 
 Finally, register your bot through the Developer Dashboard to make it accessible to users:
 
-
-- Go to https://bubbletea.chat/developer
+- Go to [https://bubbletea.chat/developer](https://bubbletea.chat/developer)
 - Enable Developer Mode to get your API key
 - Use the API or dashboard UI to register your bot
-- Your bot is now accessible at:
+
+Your bot is now accessible at:
 - 🌐 Web: https://bubbletea.chat/echobot
 - 📱 iOS & Android: Bubbletea mobile app
 
-**Dashboard Features:**
-- View all chat histories in one place
-- Search through past conversations
-- Export chat data for analysis
-- Monitor bot usage statistics
-- Manage multiple bots from a single interface
-
-
-## Types of Bots
-
-### Types of Bots You Can Build
-
-BubbleTea supports any type of AI bot - from simple chatbots to complex AI agents.
-
-#### 💬 Conversational Assistants
-Build Q&A bots, customer support agents, or personal assistants that can understand context and provide helpful responses.
-
-**Examples:** FAQ bots, documentation assistants, language tutors
-
-#### ✨ Creative AI Tools
-Create bots that generate images, write stories, compose music, or help with creative projects.
-
-**Examples:** Image generators, story writers, code assistants
-
-#### ⚡ Task Automation Bots
-Automate workflows, integrate with APIs, or perform complex multi-step tasks through conversation.
-
-**Examples:** Data analysis bots, API integrators, workflow automators
-
-#### 🌐 Specialized Domain Experts
-Deploy bots with deep knowledge in specific fields like medicine, law, finance, or education.
-
-**Examples:** Medical advisors, legal assistants, financial analysts
-
-> **The best part?** You can build your bot in any language, using any framework. BubbleTea provides the chat interface so you can focus on your bot's unique capabilities.
-
-### Bot Capabilities
-
-#### What Your Bots Can Do
-- Process text, images, and files
-- Stream responses in real-time
-- Maintain conversation context
-- Integrate with external APIs
-
-#### Rich Response Types
-- Plain text and markdown
-- Images and media
-- Code blocks with syntax highlighting
-- Custom UI components
-
 ---
 
-## Developer Tools
+## Components / Package
 
-### Tools for Building AI Bots & Agents
+### 1. Bot Configuration
 
-Everything you need to create bots that seamlessly integrate with BubbleTea's frontend.
-
-These developer tools simplify the process of creating AI bots and agents that work perfectly with BubbleTea's chat interface. Build once, deploy anywhere, and let BubbleTea handle the user experience.
-
-### 📦 Python SDK
-
-Build powerful AI bots with our feature-rich Python SDK.
-
-#### 🚀 Quick Start
-
-```bash
-# Install the SDK
-pip install bubbletea-chat
-
-# Create your first bot
-from bubbletea_chat import bt
-
-@bt.chatbot
-async def my_bot(message: str):
-    yield bt.Text(f"You said: {message}")
-
-```
-
-**What this code does:**
-- `@bt.chatbot` - Decorator that transforms your function into a chat endpoint
-- `message: str` - Receives user messages as input
-- `yield bt.Text()` - Sends responses back to the user
-- Supports async/await for non-blocking operations
-
-#### 🖥️ Server Setup
-```python
-if __name__ == "__main__":
-    # Run the server
-    bt.run_server(my_bot, port=8000)
-```
-
-**Server Features:**
-- Runs the chatbot server on port 8000
-- Automatically creates a `/chat` endpoint for your bot
-- The `/chat` endpoint accepts POST requests with chat messages
-- Supports both streaming and non-streaming responses
-- Built-in CORS support for web integration
-- Automatic error handling and logging
-- Health check endpoint at `/health`
-
-**Testing Your Bot Locally:**
-```bash
-# Start your bot
-python my_bot.py
-
-# Test with curl (in another terminal)
-curl -X POST http://localhost:8000/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message": "Hello bot!"}'
-```
-
-
-
-## 🤖 LLM Integration
-
-#### 🔧 Environment Variables
-
-To use different LLM (Large Language Model) providers, set the appropriate API keys as environment variables:
-
-```bash
-# OpenAI
-export OPENAI_API_KEY=your-openai-api-key
-
-# Anthropic Claude
-export ANTHROPIC_API_KEY=your-anthropic-api-key
-
-# Google Gemini
-export GEMINI_API_KEY=your-gemini-api-key
-```
-
-**Security Tips:**
-- Never hardcode API keys in your source code
-- Use `.env` files for local development
-- Set environment variables in your deployment platform
-- Rotate keys regularly for production bots
-
-#### 🧠 Using the LLM Module
-```python
-from bubbletea_chat import LLM
-
-# Use any LLM provider
-# Make sure to set OPENAI_API_KEY environment variable
-llm = LLM(model="gpt-4")
-response = await llm.acomplete("Hello!")
-
-# Stream responses for better user experience
-async for chunk in llm.stream("Tell me a story"):
-    yield bt.Text(chunk)
-```
-
-**Available Models:**
-- **OpenAI:** `gpt-4`, `gpt-4-turbo`, `gpt-3.5-turbo`
-- **Anthropic:** `claude-3-opus`, `claude-3-sonnet`, `claude-3-haiku`
-- **Google:** `gemini-pro`, `gemini-pro-vision`
-- **Open Source:** Support for Llama, Mistral, and more via LiteLLM
-
-**Advanced Features:**
-```python
-# Custom parameters
-llm = LLM(
-    model="gpt-4",
-    temperature=0.7,      # Control creativity (0-1)
-    max_tokens=1000,      # Limit response length
-    system_prompt="You are a helpful assistant"  # Set behavior
-)
-
-```
-
-#### 📸 Vision & Media Support
+Every bot needs configuration to tell Bubbletea how to display and interact with it. The @config decorator defines your bot's identity, appearance, and behavior. This configuration is what users see when browsing available bots:
 
 ```python
-# Analyze images
-@bt.chatbot
-async def vision_bot(message: str, images: list = None):
-    if images:
-        # Make sure to set OPENAI_API_KEY environment variable
-        llm = LLM(model="gpt-4-vision-preview")
-        response = await llm.acomplete_with_images(message, images)
-        yield bt.Text(response)
+import bubbletea_chat as bt
 
-# Generate images
-image_url = await llm.agenerate_image("A sunset over mountains")
-yield bt.Image(image_url)
+@bt.config()
+def get_config():
+    return bt.BotConfig(
+        # REQUIRED FIELDS (Must be provided)
+        name="your-bot",                 # URL-safe handle (no spaces, lowercase)
+                                         # Pattern: ^[a-zA-Z0-9_-]+$
+                                         # Used in URLs: bubbletea.chat/weather-bot
+        
+        url="https://your-bot.com/chat", # Your bot's endpoint URL
+                                         # Where your bot is hosted
+        
+        is_streaming=False,              # Whether bot supports streaming
+                                         # True if using yield, False for return
+        
+        # APP STORE METADATA
+        display_name="Weather Bot",      # User-facing name (max 20 chars)
+                                         # Shown in bot cards and headers
+        
+        subtitle="Real-time weather",    # Brief tagline (max 30 chars)
+                                         # Appears under display name
+        
+        icon_url="https://...",          # 1024x1024 PNG icon URL
+                                         # Bot's profile picture (HTTPS required)
+        
+        icon_emoji="🌤️",                 # Emoji icon alternative
+                                         # Used if icon_url not provided (max 10 chars)
+        
+        preview_video_url="https://...", # Demo video URL (HTTPS required)
+                                         # Shows bot capabilities
+        
+        description="Get accurate weather forecasts worldwide.",
+                                         # Full Markdown description
+                                         # Supports **bold**, *italic*, etc.
+        
+        example_chats=[                  # Sample example chats from bubbletea
+            "https://bubbletea.chat/chat/your-bot/shared/token-generated",
+            "https://bubbletea.chat/chat/your-bot/shared/token-generated"
+        ],
+        
+        discoverable=True,               # Show in Bot Discovery page
+                                         # False to hide from listings
+        
+        entrypoint="/weather",           # Launch context/action (optional)
+                                         # Initial page or command
+        
+        # ACCESS CONTROL
+        visibility="public",             # Bot visibility: "public" or "private"
+                                         # Controls who can access the bot
+        
+        authorized_emails=[              # Whitelist for private bots
+            "user@example.com",          # Only these emails can access
+            "team@company.com"           # if visibility="private"
+        ],
+        
+        # SUBSCRIPTION & PAYMENT
+        subscription_monthly_price=0,    # Monthly price in cents
+                                         # 0 = free
+                                         # 499 = $4.99/month
+                                         # 999 = $9.99/month
+        
+        # USER EXPERIENCE
+        initial_text="Hello! Which city's weather would you like?",
+                                         # First message shown to users
+                                         # Sets the conversation tone
+        
+        # ADVANCED CONFIGURATION
+        cors_config={                    # Custom CORS settings (optional)
+            "allow_origins": ["*"],      # Override default CORS
+            "allow_credentials": True,
+            "allow_methods": ["GET", "POST"],
+            "allow_headers": ["*"]
+        },
+    )
 ```
 
-**Supported Media Types:**
-- **Image Analysis:** JPG, PNG, GIF, WebP
-- **Image Generation:** DALL-E 3, Stable Diffusion
-- **File Processing:** PDF, TXT, CSV, JSON
-- **Audio Support:** Coming soon!
+### 2. Components
 
-> **Note:** The BT package automatically creates these endpoints for your bot:
-> - `/chat` - Main bot endpoint for BubbleTea integration
-> - `/docs` - Swagger API documentation
+Bubbletea provides a rich set of UI components that let your bot communicate beyond plain text. Each component is designed for specific use cases. Here's each component with detailed examples:
 
+#### 💬 Text Component
 
-### 📚 Developer Resources
-
-#### Documentation
-- [API Reference](#)
-- [Tutorial Guide](#)
-- [Best Practices](#)
-
-#### Example Bots
-- [Echo Bot](https://github.com/bubbletea/examples)
-- [AI Assistant](https://github.com/bubbletea/examples)
-- [Image Generator](https://github.com/bubbletea/examples)
-
-[PyPI Package](https://pypi.org/project/bubbletea-chat/) | [GitHub](https://github.com/bubbletea)
-
----
-
-## API Reference
-
-### Core Decorators
-
-#### `@bt.chatbot`
-The main decorator that transforms your function into a chat endpoint.
+Simple text messages for basic communication. The foundation of all bot responses.
 
 ```python
-@bt.chatbot
-async def my_bot(
-    message: str,           # User's message (required)
-    images: list = None,    # List of uploaded images
-    files: list = None,     # List of uploaded files
-    history: list = None,   # Conversation history
-    user_id: str = None,    # Unique user identifier
-    metadata: dict = None   # Additional metadata
-):
-    yield bt.Text("Response")
+import bubbletea_chat as bt
+
+# Simple text message
+return bt.Text("Hello, world!")
+
+# Multiple text messages
+return [bt.Text("Processing your request..."), bt.Text("Done! Here are the results.")]
 ```
 
-**Parameters:**
-- `message` (str, required): The user's input message
-- `images` (list, optional): Base64-encoded images from the user
-- `files` (list, optional): Uploaded files with metadata
-- `history` (list, optional): Previous conversation messages
-- `user_id` (str, optional): Unique identifier for the user
-- `metadata` (dict, optional): Additional context data
+#### 📝 Markdown Component
 
-### Response Components
+Rich formatted text with full Markdown support including bold, italic, lists, and more.
 
-#### Text Components
 ```python
-# Plain text
-bt.Text(content: str, typing_speed: int = 30)
+# Markdown with rich formatting
+return bt.Markdown("""
+# Heading
+**Bold text** and *italic text*
 
-# Markdown with formatting
-bt.Markdown(content: str)
+- Bullet point 1
+- Bullet point 2
 
-# Code with syntax highlighting
-bt.Code(content: str, language: str = "python")
+1. Numbered list
+2. Second item
 
-# Preformatted text
-bt.Pre(content: str)
+```python
+# Code blocks supported
+print("Hello")
 ```
 
-#### Media Components
+
+#### 🎨 Image Component
+
+Display images with optional alt text for accessibility.
+
 ```python
-# Images
-bt.Image(
-    url: str,
-    alt: str = None,
-    width: int = None,
-    height: int = None,
-    caption: str = None
-)
-
-# Video
-bt.Video(
-    url: str,
-    thumbnail: str = None,
-    caption: str = None
-)
-
-# Audio
-bt.Audio(
-    url: str,
-    title: str = None
-)
-
-# Files
-bt.File(
-    url: str,
-    filename: str,
-    size: int = None
+# Display an image
+return bt.Image(
+    url="https://picsum.photos/300/200",
+    alt="A beautiful sunset"
 )
 ```
 
-#### Interactive Components
+#### 🎬 Video Component
+
+Embed videos with built-in player controls.
+
 ```python
-# Buttons
-bt.Button(
-    label: str,
-    action: str,
-    style: str = "primary",  # primary, secondary, danger
-    disabled: bool = False
+# Embed a video
+return bt.Video(
+    url="https://www.w3schools.com/html/mov_bbb.mp4"
 )
 
-# Button group
-bt.ButtonGroup(buttons: list[Button])
+# Video with context
+return [bt.Text("Watch this tutorial:"), bt.Video("https://example.com/demo.mp4")]
+```
 
-# Pills (quick replies)
-bt.Pills(
-    options: list[str],
-    action: str = "select"
+#### 🎴 Card Component
+
+Interactive cards combining images and text with click actions.
+
+```python
+# Single card
+return bt.Card(
+    image=bt.Image(url="https://example.com/product.jpg"),
+    text="Premium Plan",
+    card_value="premium_selected"
 )
 
-# Cards
-bt.Card(
-    title: str,
-    description: str = None,
-    image: str = None,
-    buttons: list[Button] = None
-)
-
-# Forms
-bt.Form(
-    fields: list[Field],
-    submit_action: str = "submit"
-)
-
-# Input fields for forms
-bt.TextField(name: str, label: str, required: bool = False)
-bt.EmailField(name: str, label: str, required: bool = False)
-bt.NumberField(name: str, label: str, min: float = None, max: float = None)
-bt.SelectField(name: str, label: str, options: list[str])
-bt.CheckboxField(name: str, label: str)
+# Multiple cards
+return bt.Cards(cards=[
+    bt.Card(
+        image=bt.Image(url="https://example.com/basic.jpg"),
+        text="Basic Plan - $9/month",
+        card_value="basic"
+    ),
+    bt.Card(
+        image=bt.Image(url="https://example.com/pro.jpg"),
+        text="Pro Plan - $19/month",
+        card_value="pro"
+    )
+], orient="tall")  # or "tall" for vertical layout
 ```
 
-#### Layout Components
+#### 💊 Pills Component
+
+Quick action buttons for user selections and choices.
+
 ```python
-# Lists
-bt.List(items: list[str], ordered: bool = False)
+# Quick selection pills
+return bt.Pills(pills=[
+    bt.Pill(text="Yes", pill_value="yes_selected"),
+    bt.Pill(text="No", pill_value="no_selected"),
+    bt.Pill(text="Maybe", pill_value="maybe_selected")
+])
 
-# Tables
-bt.Table(
-    headers: list[str],
-    rows: list[list[str]]
-)
-
-# Divider
-bt.Divider()
-
-# Spacer
-bt.Spacer(height: int = 20)
-
-# Container
-bt.Container(
-    children: list[Component],
-    style: dict = None
-)
+# Category selection
+return bt.Text("Choose a category:")
+return bt.Pills(pills=[
+    bt.Pill(text="🏠 Home", pill_value="home"),
+    bt.Pill(text="💼 Work", pill_value="work"),
+    bt.Pill(text="🎮 Gaming", pill_value="gaming"),
+    bt.Pill(text="📚 Education", pill_value="education")
+])
 ```
 
-### Server Configuration
+#### ⚠️ Error Component
 
-#### `bt.run_server()`
-Start the bot server with custom configuration.
+Display error messages with proper styling and optional error codes.
 
 ```python
-bt.run_server(
-    bot_function,
-    port: int = 8000,
-    host: str = "0.0.0.0",
-    cors_origins: list = ["*"],
-    max_request_size: int = 10485760,  # 10MB
-    timeout: int = 30,
-    workers: int = 1,
-    ssl_cert: str = None,
-    ssl_key: str = None
+# Simple error
+return bt.Error(
+    title="Connection Failed",
+    description="Unable to connect to the server",
+    code="ERR_CONNECTION"
+)
+
+# Error without description
+return bt.Error(
+    title="Invalid Input",
+    code="ERR_VALIDATION"
+)
+
+# Detailed error
+return bt.Error(
+    title="Payment Failed",
+    description="Your card was declined. Please try another payment method.",
+    code="PAY_001"
 )
 ```
 
-**Parameters:**
-- `bot_function`: Your decorated chatbot function
-- `port`: Server port (default: 8000)
-- `host`: Server host (default: "0.0.0.0")
-- `cors_origins`: Allowed CORS origins
-- `max_request_size`: Maximum request size in bytes
-- `timeout`: Request timeout in seconds
-- `workers`: Number of worker processes
-- `ssl_cert`: Path to SSL certificate
-- `ssl_key`: Path to SSL key
+#### ⏳ Block Component
 
----
-
-## Deployment Guide
-
-### Local Development
-
-#### Using ngrok (Recommended for Testing)
-```bash
-# Install ngrok
-brew install ngrok  # macOS
-# or download from https://ngrok.com
-
-# Start your bot
-python my_bot.py
-
-# In another terminal, expose it to the internet
-ngrok http 8000
-
-# Use the ngrok URL to register with BubbleTea
-# Example: https://abc123.ngrok.io/chat
-```
-
-### Cloud Deployment
-
-#### Deploy to Heroku
-1. Create `requirements.txt`:
-```
-bubbletea-chat
-gunicorn
-```
-
-2. Create `Procfile`:
-```
-web: gunicorn my_bot:app -w 1 --worker-class uvicorn.workers.UvicornWorker
-```
-
-3. Deploy:
-```bash
-heroku create my-bubbletea-bot
-git push heroku main
-```
-
-#### Deploy to AWS Lambda
-1. Install dependencies:
-```bash
-pip install bubbletea-chat mangum -t .
-```
-
-2. Create Lambda handler:
-```python
-from mangum import Mangum
-from my_bot import app
-
-handler = Mangum(app)
-```
-
-3. Package and deploy:
-```bash
-zip -r function.zip .
-aws lambda create-function --function-name my-bot ...
-```
-
-#### Deploy to Google Cloud Run
-1. Create `Dockerfile`:
-```dockerfile
-FROM python:3.9-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-COPY . .
-CMD ["python", "my_bot.py"]
-```
-
-2. Build and deploy:
-```bash
-gcloud builds submit --tag gcr.io/PROJECT_ID/my-bot
-gcloud run deploy --image gcr.io/PROJECT_ID/my-bot
-```
-
-#### Deploy to DigitalOcean App Platform
-1. Connect your GitHub repository
-2. Configure build settings:
-   - Build Command: `pip install -r requirements.txt`
-   - Run Command: `python my_bot.py`
-3. Set environment variables
-4. Deploy
-
-### Production Best Practices
-
-#### 1. Use Environment Variables
-```python
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-API_KEY = os.getenv("API_KEY")
-DATABASE_URL = os.getenv("DATABASE_URL")
-```
-
-#### 2. Implement Health Checks
-```python
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy", "timestamp": datetime.now()}
-```
-
-#### 3. Add Logging
-```python
-import logging
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-@bt.chatbot
-async def bot(message: str):
-    logger.info(f"Received message: {message[:50]}...")
-    # Bot logic here
-```
-
-#### 4. Rate Limiting
-```python
-from slowapi import Limiter
-from slowapi.util import get_remote_address
-
-limiter = Limiter(key_func=get_remote_address)
-
-@app.post("/chat")
-@limiter.limit("30/minute")
-async def chat_endpoint(request: Request):
-    # Handle chat
-```
-
-#### 5. Database Integration
-```python
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(bind=engine)
-
-@bt.chatbot
-async def bot_with_db(message: str):
-    db = SessionLocal()
-    try:
-        # Database operations
-        user_data = db.query(User).filter_by(id=user_id).first()
-        yield bt.Text(f"Hello {user_data.name}")
-    finally:
-        db.close()
-```
-
----
-
-## Examples
-
-### Example Bots
-
-Get inspired by these example implementations.
-
-#### 🎨 Image Generation Bot
-Generate images from text descriptions using DALL-E
+Loading indicator for long-running operations. Automatically replaced when next component is yielded.
 
 ```python
-@bt.chatbot
-async def art_bot(prompt: str):
-    # Make sure to set OPENAI_API_KEY environment variable
-    llm = LLM(model="dall-e-3")
-    image_url = await llm.agenerate_image(prompt)
-    yield bt.Image(image_url)
-    yield bt.Text("Your image is ready!")
+# Show loading while processing
+return bt.Block(timeout=30)  # 30 second timeout
+
+# Simulate long operation
+import time
+time.sleep(5)
+
+# This replaces the loading indicator
+return bt.Text("Processing complete!")
+
+# Example with async operation
+return bt.Block(timeout=60)
+result = await fetch_data()  # Long operation
+return bt.Text(f"Results: {result}")
 ```
 
-#### 📚 Knowledge Assistant
-Answer questions using GPT-4 with streaming
+### 3. Streaming Responses
+
+Streaming provides a better user experience by showing responses as they're generated, rather than waiting for the complete answer. Users see immediate feedback and can read while the bot continues thinking. This is especially important for longer responses:
 
 ```python
-@bt.chatbot
-async def assistant(message: str):
-    # Make sure to set OPENAI_API_KEY environment variable
-    llm = LLM(model="gpt-4")
-    yield bt.Text("Let me help you with that...")
+@bt.chatbot(stream=True)
+async def stream_bot(message: str):
+    # Show loading indicator
+    return bt.Block(timeout=1000)
     
+    # Stream response chunks
+    llm = LLM(model="gpt-4")
     async for chunk in llm.stream(message):
         yield bt.Text(chunk)
 ```
 
-#### 👁️ Vision Analyzer
-Analyze images and answer questions about them
+### 4. Context - User & Conversation Tracking
+
+Bubbletea automatically provides context about users and conversations. This lets your bot maintain state, personalize responses, and track conversation history. Every message includes optional context parameters you can use:
+
+```python
+@bt.chatbot
+def contextual_bot(message: str, user_uuid: str = None, 
+                  conversation_uuid: str = None,
+                  user_email: str = None):
+    # Access user and conversation context
+    response = f"Message: {message}"
+    if user_uuid:
+        response += f"\nUser: {user_uuid}"
+    if conversation_uuid:
+        response += f"\nConversation: {conversation_uuid}"
+    if user_email:
+        response += f"\nEmail: {user_email}"
+    
+    return bt.Text(response)
+```
+
+### 5. Thread-based Conversation Support
+
+Bubbletea automatically organizes chats into conversation threads, similar to popular messaging apps. Each conversation maintains its own context and history, allowing users to have multiple independent chats with the same bot. This is perfect for complex, multi-turn interactions:
+
+```python
+# Each conversation gets a unique ID
+# Messages are grouped by conversation
+# Context persists within a conversation
+# Users can have multiple conversations
+
+@bt.chatbot
+def bot_with_memory(message: str, 
+                    conversation_uuid: str):
+    # Access conversation history if needed
+    # Bubbletea handles the persistence
+    return bt.Text(f"Conversation: {conversation_uuid}")
+```
+
+### 6. Multiple Bots with Configurations
+
+You can run multiple bots in the same application, each with its own unique route and configuration. This is perfect for creating specialized bots for different purposes like support, sales, and general assistance:
+
+```python
+import bubbletea_chat as bt
+
+# Configuration for Support Bot
+@bt.config("support")
+def support_config():
+    return bt.BotConfig(
+        name="support-bot",
+        url="https://your-bot.com/support",
+        is_streaming=True,
+        display_name="Support Assistant",
+        subtitle="24/7 Technical Support",
+        icon_emoji="🛟",
+        description="Get help with technical issues",
+        initial_text="Hello! How can I help you today?"
+    )
+
+# Support Bot at /support
+@bt.chatbot("support")
+def support_bot(message: str, user_email: str = None):
+    if user_email:
+        return bt.Text(f"Hi {user_email}! Let me help with that.")
+    return bt.Text("How can I help you today?")
+
+# Configuration for Sales Bot
+@bt.config("sales")
+def sales_config():
+    return bt.BotConfig(
+        name="sales-bot",
+        url="https://your-bot.com/sales",
+        is_streaming=False,
+        display_name="Sales Assistant",
+        subtitle="Product Info & Pricing",
+        icon_emoji="💼",
+        description="Learn about our products",
+        subscription_monthly_price=999,  # $9.99/month
+        initial_text="Welcome! Looking for the perfect plan?"
+    )
+
+# Sales Bot at /sales
+@bt.chatbot("sales")
+def sales_bot(message: str, subscription_status: str = None):
+    if subscription_status == "active":
+        return bt.Text("As a premium member, you get 20% off!")
+    return bt.Text("Let me help you find the perfect plan!")
+
+# Configuration for General Bot (default)
+@bt.config()
+def general_config():
+    return bt.BotConfig(
+        name="general-assistant",
+        url="https://your-bot.com",
+        is_streaming=True,
+        display_name="General Assistant",
+        subtitle="Your AI Helper",
+        icon_emoji="🤖",
+        description="General-purpose assistant"
+    )
+
+# General Bot at /chat (default)
+@bt.chatbot()
+def general_bot(message: str):
+    return bt.Text("Hello! I'm your general assistant.")
+
+if __name__ == "__main__":
+    # Run all registered bots
+    bt.run_server(port=8000)
+    
+    # Or run specific bots only
+    # bt.run_server([support_bot, sales_bot], port=8000)
+```
+
+**Configuration Endpoints:** Each bot's configuration is accessible at its route + /config:
+
+- /support → Bot endpoint | /support/config → Configuration
+- /sales → Bot endpoint | /sales/config → Configuration
+- /chat → Default bot | /config → Default configuration
+
+**Important:** Configuration decorator route must match chatbot decorator route. Each bot maintains its own independent configuration and can have different settings for streaming, authentication, pricing, and UI appearance.
+
+### 7. Environment Variables
+
+Keep your API keys and configuration secure using environment variables. Never hardcode sensitive information in your source code. Create a .env file in your project root (and add it to .gitignore) to manage your bot's settings:
+
+```bash
+# .env file for your bot
+
+# LLM API Keys (optional, for AI features)
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+GEMINI_API_KEY=...
+
+# Bubbletea Settings
+BOT_PORT=8000
+BOT_HOST=0.0.0.0
+
+# Your bot's public URL (for registration)
+BOT_URL=https://your-bot.ngrok.io
+```
+
+### 8. Swagger API Documentation
+
+When you run your bot server, automatic API documentation is available via Swagger UI. This interactive documentation lets you explore and test all endpoints directly in your browser:
+
+```bash
+# Start your bot server
+python my_bot.py
+
+# Access Swagger UI at:
+https://your-bot.com/docs
+
+# Interactive API documentation includes:
+# - All available endpoints
+# - Request/response schemas
+# - Try it out functionality
+# - Authentication requirements
+```
+
+Swagger UI provides a complete reference for your bot's API, making it easy to test endpoints and understand the expected formats.
+
+### 9. Developer API Reference
+
+The Developer API lets you programmatically manage your bots. To get started:
+
+1. Go to https://bubbletea.chat/developer
+2. Sign in with your Bubbletea account
+3. Enable "Developer Mode" in settings
+4. Your API key will be displayed
+5. Click the copy button to copy your API key
+6. You can copy your API key anytime from the dashboard
+
+*Note: Keep your API key secret. You can always access and copy it again from the developer dashboard. If compromised, regenerate it immediately.*
+
+#### Authentication
+
+All Developer API requests require your API key in the X-API-Key header:
+
+```bash
+# Add this header to all requests
+-H "X-API-Key: your-api-key-here"
+```
+
+#### Get Developer Profile
+
+Retrieve your developer account information
+
+```bash
+curl -X GET https://backend.bubbletea.chat/v1/developer/profile \
+  -H "X-API-Key: your-api-key-here"
+```
+
+#### Create Bot
+
+Register a new bot with Bubbletea
+
+```bash
+curl -X POST https://backend.bubbletea.chat/v1/developer/bots \
+  -H "X-API-Key: your-api-key-here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "my-bot",
+    "display_name": "My Bot",
+    "api_url": "https://my-bot.example.com",
+    "stream": true,
+    "emoji": "🤖",
+    "subtitle": "An awesome bot",
+    "description": "This bot does amazing things",
+    "initial_text": "Hello! How can I help you?",
+    "visibility": "public",
+    "authorization": "none",
+    "subscription_monthly_price": 0
+  }'
+```
+
+#### List Your Bots
+
+Get all bots you've created
+
+```bash
+curl -X GET https://backend.bubbletea.chat/v1/developer/bots \
+  -H "X-API-Key: your-api-key-here"
+```
+
+#### Get Bot Details
+
+Retrieve specific bot configuration
+
+```bash
+curl -X GET https://backend.bubbletea.chat/v1/developer/bots/my-bot \
+  -H "X-API-Key: your-api-key-here"
+```
+
+#### Update Bot
+
+Modify bot configuration
+
+```bash
+curl -X PUT https://backend.bubbletea.chat/v1/developer/bots/my-bot \
+  -H "X-API-Key: your-api-key-here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "display_name": "My Updated Bot",
+    "subtitle": "Now even better!",
+    "description": "Updated description",
+    "emoji": "🚀"
+  }'
+```
+
+#### Refresh Bot Config
+
+Sync bot configuration from its API URL
+
+```bash
+curl -X POST https://backend.bubbletea.chat/v1/developer/bots/my-bot/refresh-config \
+  -H "X-API-Key: your-api-key-here"
+```
+
+#### Delete Bot
+
+Remove a bot from Bubbletea
+
+```bash
+curl -X DELETE https://backend.bubbletea.chat/v1/developer/bots/my-bot \
+  -H "X-API-Key: your-api-key-here"
+```
+
+#### List Bot Conversations
+
+Get all conversations for your bot
+
+```bash
+curl -X GET https://backend.bubbletea.chat/v1/developer/bots/my-bot/conversations \
+  -H "X-API-Key: your-api-key-here"
+```
+
+#### Get Conversation Messages
+
+Retrieve all messages from a conversation
+
+```bash
+curl -X GET https://backend.bubbletea.chat/v1/developer/conversations/{conversation-uuid}/messages \
+  -H "X-API-Key: your-api-key-here"
+```
+
+#### Test Bot
+
+Send a test message to your bot
+
+```bash
+curl -X POST https://backend.bubbletea.chat/v1/developer/bots/my-bot/test \
+  -H "X-API-Key: your-api-key-here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "Hello, bot!"
+  }'
+```
+
+### 10. LiteLLM Integration
+
+LiteLLM gives you instant access to 100+ language models through a single, unified interface. Switch between OpenAI, Anthropic, Google, and open-source models with just one line of code. This flexibility lets you choose the best model for each task without rewriting your bot:
+
+```python
+from bubbletea_chat import LLM
+
+# Use any model via LiteLLM
+llm = LLM(model="gpt-4")
+llm = LLM(model="claude-3-opus-20240229")
+llm = LLM(model="gemini/gemini-pro")
+
+# Generate responses
+response = await llm.acomplete("Hello!")
+
+# Stream responses
+async for chunk in llm.stream("Tell me a story"):
+    yield bt.Text(chunk)
+```
+
+**Using Multiple LLMs in One Bot**
+
+Combine different AI models in a single bot to leverage each model's strengths. Use DALL-E for images, Claude for code, GPT-4 for general chat, or any combination that fits your needs:
+
+```python
+# Mix different LLMs in one bot
+@bt.chatbot
+async def multi_llm_bot(message: str):
+    if "image" in message:
+        # Use DALL-E for images
+        llm = LLM(model="dall-e-3")
+        url = await llm.agenerate_image(message)
+        return bt.Image(url)
+    elif "code" in message:
+        # Use Claude for code
+        llm = LLM(model="claude-3-opus-20240229")
+        response = await llm.acomplete(message)
+        return bt.Markdown(f"```python\n{response}\n```")
+    else:
+        # Use GPT-4 for general chat
+        llm = LLM(model="gpt-4")
+        response = await llm.acomplete(message)
+        return bt.Text(response)
+```
+
+---
+
+## Deploying Bots
+
+### 1. Ngrok - Local Development Made Easy
+
+Ngrok is the fastest way to test your bot during development. It creates a secure tunnel from the internet to your local machine, giving you a public URL instantly. Perfect for testing and debugging before deploying to production:
+
+```bash
+# Step 1: Install ngrok
+brew install ngrok  # macOS
+# or download from https://ngrok.com
+
+# Step 2: Start your bot
+python your_bot.py
+
+# Step 3: Expose to internet
+ngrok http 8000
+
+# Your bot is now accessible at:
+# https://abc123.ngrok.io
+```
+
+### 2. Replit - Instant Cloud Hosting
+
+Replit provides free, always-on hosting for your bot with zero configuration. Just write your code in the browser and click Run. No server setup, no deployment scripts, no DevOps knowledge required. Your bot gets a permanent URL and stays online 24/7:
+
+```bash
+# 1. Fork the Bubbletea template on Replit
+# 2. Add your bot code to main.py
+# 3. Click "Run"
+# 4. Your bot URL: https://botname.username.repl.co
+
+# Replit automatically handles:
+# - SSL certificates
+# - Always-on hosting
+# - Environment variables
+```
+
+### 3. CORS Support - Cross-Origin Configuration
+
+CORS (Cross-Origin Resource Sharing) allows Bubbletea's frontend to communicate with your bot's backend. The SDK handles this automatically, but if you're building a custom implementation, you'll need to configure CORS headers properly:
+
+```python
+# FastAPI example
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+```
+
+### 4. Testing Your Bot
+
+Before registering with Bubbletea, test your bot locally to ensure it's working correctly. Use these curl commands to verify your endpoints are responding properly. Each test simulates what Bubbletea will send to your bot:
+
+```bash
+# Test your bot endpoint
+curl -X POST https://your-bot.com/chat \
+  -H "Content-Type: application/json" \
+  -d '{"type": "user", "message": "Hello"}'
+
+# Test config endpoint
+curl https://your-bot.com/config
+
+# Test with images
+curl -X POST https://your-bot.com/chat \
+  -H "Content-Type: application/json" \
+  -d '{"type": "user", "message": "What is this?",
+       "images": [{"url": "https://example.com/img.jpg"}]}'
+```
+
+---
+
+## Examples / Showcase / What can you build?
+
+Bubbletea empowers you to build any type of AI bot - from simple utilities to complex agents. Here are some popular examples with complete code you can copy and customize. Each example demonstrates different capabilities and best practices:
+
+### 🎨 Image Generation Bot
+
+Create stunning images from text descriptions using DALL-E 3. This bot transforms your ideas into visual art instantly. Perfect for creative projects, marketing materials, or just having fun:
+
+```python
+@bt.chatbot
+async def art_bot(message: str):
+    llm = LLM(model="dall-e-3")
+    
+    # Generate image from prompt
+    image_url = await llm.agenerate_image(message)
+    
+    # Return the generated image
+    return [bt.Image(image_url), bt.Text("Your image is ready!")]
+```
+
+### 👁️ Vision Analyzer
+
+Analyze images and answer questions about visual content using GPT-4 Vision. This bot can describe images, identify objects, read text in images, and answer specific questions about what it sees:
 
 ```python
 @bt.chatbot
 async def vision_bot(message: str, images: list = None):
     if images:
-        # Make sure to set OPENAI_API_KEY environment variable
+        # Analyze images with GPT-4 Vision
         llm = LLM(model="gpt-4-vision-preview")
-        analysis = await llm.acomplete_with_images(message, images)
-        yield bt.Markdown(analysis)
+        response = await llm.acomplete_with_images(
+            message, images
+        )
+        return bt.Markdown(response)
+    else:
+        return bt.Text("Please upload an image to analyze")
 ```
 
-[View More Examples →](https://github.com/bubbletea/examples)
+### 🤖 Multiple Specialized Bots
 
----
+Create multiple bots in one application, each specialized for different tasks. Perfect for businesses that need separate customer support, sales, and general assistance bots:
 
-## Component Documentation
-
-### Available UI Components
-
-BubbleTea provides rich UI components for enhanced chat experiences:
-
-#### Text Components
 ```python
-# Plain text
-yield bt.Text("Simple message")
+# Run multiple bots with unique configurations
+@bt.config()
+def tech_support_config():
+    return bt.BotConfig(
+        name="tech-support",
+        display_name="Tech Support",
+        icon_emoji="🔧",
+        initial_text="Technical support here!"
+    )
 
-# Markdown formatting
-yield bt.Markdown("**Bold** and *italic* text with [links](https://example.com)")
+@bt.chatbot("tech-support")
+def tech_bot(message: str):
+    return bt.Text("Let me help with that technical issue...")
 
-# Code blocks with syntax highlighting
-yield bt.Code("print('Hello World')", language="python")
+@bt.config()
+def sales_config():
+    return bt.BotConfig(
+        name="sales",
+        display_name="Sales Assistant",
+        icon_emoji="💼",
+        subscription_monthly_price=999  # Premium bot
+    )
+
+@bt.chatbot("sales")
+def sales_bot(message: str):
+    return bt.Text("I can help you find the perfect solution!")
+
+# Run all bots on one server
+bt.run_server(port=8000)
 ```
 
-#### Media Components
-```python
-# Images
-yield bt.Image("https://example.com/image.jpg", alt="Description")
+### 📦 Multi-Modal Showcase Bot
 
-# Cards with rich content
-yield bt.Card(
-    title="Product Name",
-    description="Product details",
-    image="https://example.com/product.jpg",
-    buttons=[bt.Button("Buy Now", action="purchase")]
-)
+Showcase all of Bubbletea's UI components in one bot. This example demonstrates how to combine text, markdown, images, cards, and interactive elements to create rich, engaging conversations:
 
-# Lists and tables
-yield bt.List(["Item 1", "Item 2", "Item 3"])
-```
-
-#### Interactive Components
-```python
-# Buttons for user actions
-yield bt.Button("Click me", action="button_clicked")
-
-# Pills for quick replies
-yield bt.Pills(["Yes", "No", "Maybe"], action="user_choice")
-
-# Forms for data collection
-yield bt.Form(fields=[
-    bt.TextField("name", label="Your Name"),
-    bt.EmailField("email", label="Email Address")
-])
-```
-
----
-
-## Troubleshooting Guide
-
-### Common Issues and Solutions
-
-#### Bot Not Responding
-**Problem:** Your bot doesn't respond to messages
-
-**Solutions:**
-- Verify your bot server is running: `curl http://localhost:8000/health`
-- Check the `/chat` endpoint is accessible
-- Ensure proper CORS headers are set
-- Review server logs for error messages
-
-#### Authentication Errors
-**Problem:** API key or authentication issues
-
-**Solutions:**
-- Verify environment variables are set correctly
-- Check API key validity and permissions
-- Ensure keys are not expired
-- Use `.env` file for local development
-
-#### Streaming Not Working
-**Problem:** Responses appear all at once instead of streaming
-
-**Solutions:**
-```python
-# Ensure you're using async generator
-@bt.chatbot
-async def streaming_bot(message: str):
-    # Use yield for streaming
-    for word in message.split():
-        yield bt.Text(word + " ")
-        await asyncio.sleep(0.1)  # Small delay for effect
-```
-
-#### Image Upload Issues
-**Problem:** Images not processing correctly
-
-**Solutions:**
-- Check file size limits (max 10MB)
-- Verify supported formats (JPG, PNG, WebP)
-- Ensure proper base64 encoding if needed
-- Test with smaller images first
-
----
-
-## Performance Best Practices
-
-### Optimize Your Bot for Speed
-
-#### 1. Use Streaming for Long Responses
-```python
-# Good - Stream responses
-async for chunk in llm.stream(prompt):
-    yield bt.Text(chunk)
-
-# Avoid - Waiting for complete response
-response = await llm.acomplete(prompt)
-yield bt.Text(response)
-```
-
-#### 2. Implement Caching
-```python
-from functools import lru_cache
-
-@lru_cache(maxsize=100)
-def expensive_operation(input_data):
-    # Cache results for repeated queries
-    return process_data(input_data)
-```
-
-#### 3. Handle Errors Gracefully
 ```python
 @bt.chatbot
-async def robust_bot(message: str):
-    try:
-        response = await process_message(message)
-        yield bt.Text(response)
-    except Exception as e:
-        yield bt.Text("I encountered an issue. Please try again.")
-        # Log error for debugging
-        print(f"Error: {e}")
-```
-
-#### 4. Optimize Context Management
-```python
-# Keep conversation context reasonable
-MAX_CONTEXT_LENGTH = 10  # Last 10 messages
-
-@bt.chatbot
-async def context_aware_bot(message: str, history: list):
-    # Limit context to prevent token overflow
-    recent_history = history[-MAX_CONTEXT_LENGTH:]
-    response = await llm.acomplete_with_context(message, recent_history)
-    yield bt.Text(response)
+async def multimodal_bot(message: str):
+    return [bt.Markdown("# Welcome!"), bt.Text("I can show different content types:")
+    
+    , bt.Markdown("""
+    - 📝 **Text** messages
+    - 🎨 **Images** and media
+    - 📊 **Cards** with actions
+    """),
+     bt.Cards(cards=[
+        bt.Card(
+            image=bt.Image(url="https://picsum.photos/400/300"),
+            text="Example Card",
+            card_value="card_1"
+        )
+          ])]
 ```
 
 ---
 
-## Security Guidelines
+## Dashboard
 
-### Protecting Your Bot and Users
+The Bubbletea Dashboard is your central command center for managing bots, monitoring usage, and configuring settings. Access it at:
 
-#### API Key Management
-```python
-# ❌ NEVER do this
-API_KEY = "sk-abc123xyz789"
+**Dashboard URLs:**
+- 🌐 Main Dashboard: https://bubbletea.chat
+- 👨‍💻 Developer Portal: https://bubbletea.chat/developer
 
-# ✅ Use environment variables
-import os
-API_KEY = os.getenv("API_KEY")
+The dashboard provides everything you need to run successful AI bots:
 
-# ✅ Use a .env file for local development
-from dotenv import load_dotenv
-load_dotenv()
-```
+### Dashboard Features
 
-#### Input Validation
-```python
-@bt.chatbot
-async def secure_bot(message: str):
-    # Validate and sanitize input
-    if len(message) > 1000:
-        yield bt.Text("Message too long. Please keep it under 1000 characters.")
-        return
-    
-    # Escape special characters for safety
-    safe_message = html.escape(message)
-    
-    # Process safely
-    response = await process_safe_input(safe_message)
-    yield bt.Text(response)
-```
+#### Bot Management
+Register, update, and manage your bots through BT Agent or the Developer API
 
-#### Rate Limiting & DDoS Protection
-```python
-from collections import defaultdict
-from datetime import datetime, timedelta
+#### Analytics
+Track usage, conversations, and user engagement
 
-request_counts = defaultdict(list)
+#### Developer Mode
+Enable developer mode to access API keys and advanced features
 
-@bt.chatbot
-async def rate_limited_bot(message: str, user_id: str):
-    # Check rate limit (10 requests per minute)
-    now = datetime.now()
-    minute_ago = now - timedelta(minutes=1)
-    
-    # Clean old requests
-    request_counts[user_id] = [
-        req_time for req_time in request_counts[user_id]
-        if req_time > minute_ago
-    ]
-    
-    # Check limit
-    if len(request_counts[user_id]) >= 10:
-        yield bt.Text("Too many requests. Please wait a moment.")
-        return
-    
-    request_counts[user_id].append(now)
-    # Process request
-```
+### Developer Dashboard
 
-#### Data Privacy
-```python
-@bt.chatbot
-async def privacy_conscious_bot(message: str, user_id: str):
-    # Don't log sensitive information
-    logger.info(f"User {user_id[:8]}... sent message")  # Partial ID only
-    
-    # Encrypt sensitive data before storage
-    encrypted_data = encrypt(sensitive_info)
-    
-    # Use secure connections
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-            "https://api.example.com/secure",
-            ssl=True,
-            headers={"Authorization": f"Bearer {token}"}
-        ) as response:
-            data = await response.json()
-```
+When you enable Developer Mode, you get access to advanced features and API keys:
 
-#### Authentication & Authorization
-```python
-@bt.chatbot
-async def authenticated_bot(message: str, user_id: str, metadata: dict):
-    # Verify user permissions
-    if not await verify_user_access(user_id):
-        yield bt.Text("You don't have permission to use this bot.")
-        return
-    
-    # Check for admin commands
-    if message.startswith("/admin"):
-        if not await is_admin(user_id):
-            yield bt.Text("Admin access required.")
-            return
-```
+The Developer Dashboard provides:
+- API key generation and management
+- Bot registration via API
+- Advanced bot configuration options
+- Usage analytics and metrics
 
 ---
 
-## FAQ
+## Using Bubbletea with Other Languages
 
-### Frequently Asked Questions
+While we provide an official Python SDK, Bubbletea works with any programming language that can create HTTP endpoints. All you need to do is implement the chat endpoint that returns the correct response format. Here's how to build a Bubbletea bot in JavaScript/Node.js:
 
-#### General Questions
+```javascript
+// server.js
+const express = require('express');
+const app = express();
 
-**Q: What is BubbleTea?**
-A: BubbleTea is a platform that provides instant web interfaces for AI chatbots and agents. Build your bot in any language, and we provide the beautiful chat UI.
+app.use(express.json());
 
-**Q: Is BubbleTea free to use?**
-A: Yes! BubbleTea offers a free tier for developers to build and deploy bots. Premium features are available for production use.
+app.post('/chat', async (req, res) => {
+  const { message, user_uuid, conversation_uuid } = req.body;
+  
+  // Your bot logic here
+  const response = await processMessage(message);
+  
+  // Return Bubbletea-compatible response format
+  res.json({
+    responses: [{
+      payload: [{
+        type: "text",
+        content: response
+      }]
+    }]
+  });
+});
 
-**Q: What programming languages are supported?**
-A: Any language that can create HTTP endpoints! We provide official SDKs for Python, with JavaScript/TypeScript coming soon.
-
-**Q: Can I use my own domain?**
-A: Custom domains are available on premium plans. Free bots use the bubbletea.chat subdomain.
-
-#### Technical Questions
-
-**Q: How do I handle file uploads?**
-A: Files are automatically handled by the platform and passed to your bot:
-```python
-@bt.chatbot
-async def file_handler(message: str, files: list = None):
-    if files:
-        for file in files:
-            yield bt.Text(f"Received file: {file['name']}")
-            # Process file content
+app.listen(3000, () => {
+  console.log('Bot running on port 3000');
+});
 ```
 
-**Q: Can I maintain conversation history?**
-A: Yes! Conversation history is automatically provided:
-```python
-@bt.chatbot
-async def bot_with_memory(message: str, history: list = None):
-    if history:
-        context = "\n".join([f"{h['role']}: {h['content']}" for h in history[-5:]])
-        # Use context in your response
-```
-
-**Q: How do I stream responses?**
-A: Use async generators with yield:
-```python
-@bt.chatbot
-async def streaming_bot(message: str):
-    for word in message.split():
-        yield bt.Text(word + " ")
-        await asyncio.sleep(0.1)
-```
-
-**Q: Can I integrate with databases?**
-A: Absolutely! Use any database library:
-```python
-import asyncpg
-
-@bt.chatbot
-async def db_bot(message: str, user_id: str):
-    conn = await asyncpg.connect(DATABASE_URL)
-    data = await conn.fetch("SELECT * FROM users WHERE id = $1", user_id)
-    await conn.close()
-    yield bt.Text(f"Welcome back, {data[0]['name']}!")
-```
-
-**Q: How do I handle errors gracefully?**
-A: Implement try-catch blocks and provide user-friendly messages:
-```python
-@bt.chatbot
-async def robust_bot(message: str):
-    try:
-        result = await risky_operation(message)
-        yield bt.Text(result)
-    except SpecificError as e:
-        yield bt.Text("Sorry, something went wrong. Please try again.")
-        logger.error(f"Error: {e}")
-    except Exception as e:
-        yield bt.Text("An unexpected error occurred.")
-        logger.critical(f"Critical error: {e}")
-```
-
-#### Deployment Questions
-
-**Q: Can I deploy on my own server?**
-A: Yes! Deploy your bot anywhere that can run Python. Just ensure the `/chat` endpoint is accessible.
-
-**Q: What are the server requirements?**
-A: Minimum requirements:
-- Python 3.8+
-- 512MB RAM
-- 1 CPU core
-- SSL certificate (for production)
-
-**Q: How do I scale my bot?**
-A: Use load balancers and multiple instances:
-```python
-# Run with multiple workers
-bt.run_server(bot, workers=4)
-
-# Or use Gunicorn
-# gunicorn my_bot:app -w 4 --worker-class uvicorn.workers.UvicornWorker
-```
-
-**Q: Can I use WebSockets?**
-A: Server-Sent Events (SSE) are used for streaming. WebSocket support is on the roadmap.
-
-#### Business Questions
-
-**Q: Can I monetize my bot?**
-A: Yes! You can charge users directly or through the BubbleTea marketplace (coming soon).
-
-**Q: Is there an SLA?**
-A: Enterprise plans include SLA guarantees. Contact sales@bubbletea.chat for details.
-
-**Q: Can I white-label the interface?**
-A: White-labeling is available on enterprise plans.
+Other supported languages:
+• Python (SDK available)
+• JavaScript/TypeScript
+• Go
+• Rust
+• Java
+• Any language with HTTP support
 
 ---
 
-## Community & Support
+## Contributing / License
 
-### Join Our Growing Community
+Bubbletea is open source and welcomes contributions from the community! Whether you're fixing bugs, adding features, improving documentation, or creating example bots, your contributions help make Bubbletea better for everyone. Join our growing community of contributors:
 
-#### 📚 Resources
-- [Documentation](https://docs.bubbletea.chat)
-- [Video Tutorials](https://youtube.com/bubbletea)
-- [Blog](https://blog.bubbletea.chat)
-- [API Status](https://status.bubbletea.chat)
+### How to Contribute
 
-#### 🤝 Contributing
-We welcome contributions! See our [Contributing Guide](https://github.com/bubbletea/contributing).
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
 
-#### 📧 Support Channels
-- **Community Support**: GitHub Discussions
-- **Email Support**: support@bubbletea.chat
-- **Enterprise Support**: enterprise@bubbletea.chat
+### License
 
-#### 🐛 Bug Reports
-Found a bug? Report it on [GitHub Issues](https://github.com/bubbletea/issues).
+MIT License - See LICENSE file for details
 
----
-
-## Ready to Build?
-
-Join developers building the next generation of AI assistants.
-
-[Get Started Free](https://bubbletea.chat/login)
-
-### Quick Links
-- 📚 [Full Documentation](https://docs.bubbletea.chat)
-- 💬 [Community Forum](https://forum.bubbletea.chat)
-- 🐛 [Report Issues](https://github.com/bubbletea/issues)
-- 📧 [Contact Support](mailto:support@bubbletea.chat)
-
----
-
-Built with ❤️ by the Bubbletea team
+[View on GitHub](https://github.com/bubbletea-chat/bubbletea) | [Report Issue](https://github.com/bubbletea-chat/bubbletea/issues)
