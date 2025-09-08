@@ -71,11 +71,11 @@ Replit provides free, always-on hosting with zero configuration:
 
 #### Step 3: Register Your Bot & Access Everywhere
 
-Finally, register your bot through the Developer Dashboard to make it accessible to users:
+Finally, register your bot through the Dashboard to make it accessible to users:
 
-- Go to [https://bubbletea.chat/developer](https://bubbletea.chat/developer)
-- Enable Developer Mode to get your API key
-- Use the API or dashboard UI to register your bot
+- Go to [https://bubbletea.chat](https://bubbletea.chat)
+- Create or select a subaccount for your bot
+- Use BT Agent or the dashboard UI to register your bot
 
 Your bot is now accessible at:
 - 🌐 Web: https://bubbletea.chat/echobot
@@ -508,22 +508,21 @@ https://your-bot.com/docs
 
 Swagger UI provides a complete reference for your bot's API, making it easy to test endpoints and understand the expected formats.
 
-### 9. Developer API Reference
+### 9. API Reference
 
-The Developer API lets you programmatically manage your bots. To get started:
+The API lets you programmatically manage your bots and subaccounts. To get started:
 
-1. Go to https://bubbletea.chat/developer
+1. Go to https://bubbletea.chat
 2. Sign in with your Bubbletea account
-3. Enable "Developer Mode" in settings
-4. Your API key will be displayed
-5. Click the copy button to copy your API key
-6. You can copy your API key anytime from the dashboard
+3. Navigate to Settings → API Keys
+4. Create a new API key for your account or subaccount
+5. Copy and store your API key securely
 
-*Note: Keep your API key secret. You can always access and copy it again from the developer dashboard. If compromised, regenerate it immediately.*
+*Note: Keep your API key secret. You can regenerate it anytime from the dashboard if compromised.*
 
 #### Authentication
 
-All Developer API requests require your API key in the X-API-Key header:
+All API requests require your API key in the X-API-Key header:
 
 ```bash
 # Add this header to all requests
@@ -691,6 +690,56 @@ async def multi_llm_bot(message: str):
 ```
 
 ---
+
+## Subaccounts
+
+### Organize Your Bots with Subaccounts
+
+Subaccounts allow you to organize and manage multiple bots under a single parent account. Each subaccount operates independently with its own bots, settings, and API keys, while the parent account maintains full oversight and control.
+
+#### Parent Account & Subaccount Relationship
+- **Parent Account**: Your main account that can create and manage multiple subaccounts
+- **Subaccounts**: Child accounts under your parent that isolate bots and resources
+- **Hierarchy**: Parent → Subaccounts → Bots (each bot belongs to one subaccount)
+- **Access Control**: Parent account has full access to all subaccounts and their bots
+
+#### Key Features
+- **Project Organization**: Group bots by project, client, or environment
+- **Isolated API Keys**: Each subaccount has its own API key for enhanced security
+- **Usage Tracking**: Monitor usage and billing per subaccount
+- **Easy Switching**: Switch between accounts seamlessly in the dashboard
+- **Parent Oversight**: Parent account can view and manage all subaccounts
+
+#### Parent Account Capabilities
+The parent account has special privileges:
+- **Create/Delete Subaccounts**: Manage the lifecycle of all subaccounts
+- **Access All Bots**: View and manage bots across all subaccounts
+- **Consolidated Billing**: All subaccount usage is billed to the parent
+- **Global API Key**: Parent API key can access any subaccount's resources
+- **Usage Analytics**: View aggregated metrics across all subaccounts
+- **Transfer Bots**: Move bots between subaccounts as needed
+
+#### Creating a Subaccount
+1. Navigate to [bubbletea.chat](https://bubbletea.chat)
+2. Click on your profile menu
+3. Select "Manage Subaccounts"
+4. Click "Create New Subaccount"
+5. Enter a unique handle for your subaccount
+6. Your subaccount is ready to use!
+7. Switch to the subaccount to start adding bot(each subaccount can have 1)
+
+#### Using Subaccounts with the API
+
+Include the subaccount ID in your API requests to operate within a specific subaccount context:
+
+#### Switching Between Subaccounts
+
+**Dashboard**: Use the account selector in the top navigation bar to switch between your parent account and subaccounts.
+
+**BT Agent**: Use natural language commands:
+- "Switch to subaccount: production"
+- "Show my subaccounts"
+
 
 ## Deploying Bots
 
@@ -870,33 +919,10 @@ async def multimodal_bot(message: str):
 
 The Bubbletea Dashboard is your central command center for managing bots, monitoring usage, and configuring settings. Access it at:
 
-**Dashboard URLs:**
+**Dashboard URL:**
 - 🌐 Main Dashboard: https://bubbletea.chat
-- 👨‍💻 Developer Portal: https://bubbletea.chat/developer
 
 The dashboard provides everything you need to run successful AI bots:
-
-### Dashboard Features
-
-#### Bot Management
-Register, update, and manage your bots through BT Agent or the Developer API
-
-#### Analytics
-Track usage, conversations, and user engagement
-
-#### Developer Mode
-Enable developer mode to access API keys and advanced features
-
-### Developer Dashboard
-
-When you enable Developer Mode, you get access to advanced features and API keys:
-
-The Developer Dashboard provides:
-- API key generation and management
-- Bot registration via API
-- Advanced bot configuration options
-- Usage analytics and metrics
-
 ---
 
 ## Using Bubbletea with Other Languages
