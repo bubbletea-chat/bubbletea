@@ -728,18 +728,6 @@ The parent account has special privileges:
 6. Your subaccount is ready to use!
 7. Switch to the subaccount to start adding bot(each subaccount can have 1)
 
-#### Using Subaccounts with the API
-
-Include the subaccount ID in your API requests to operate within a specific subaccount context:
-
-#### Switching Between Subaccounts
-
-**Dashboard**: Use the account selector in the top navigation bar to switch between your parent account and subaccounts.
-
-**BT Agent**: Use natural language commands:
-- "Switch to subaccount: production"
-- "Show my subaccounts"
-
 
 ## Deploying Bots
 
