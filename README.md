@@ -92,71 +92,71 @@ Every bot needs configuration to tell Bubbletea how to display and interact with
 ```python
 import bubbletea_chat as bt
 
-@bt.config()
+@bt.config()088323
 def get_config():
     return bt.BotConfig(
         # REQUIRED FIELDS (Must be provided)
         name="your-bot",                 # URL-safe handle (no spaces, lowercase)
                                          # Pattern: ^[a-zA-Z0-9_-]+$
                                          # Used in URLs: bubbletea.chat/weather-bot
-        
+
         url="https://your-bot.com/chat", # Your bot's endpoint URL
                                          # Where your bot is hosted
-        
+
         is_streaming=False,              # Whether bot supports streaming
                                          # True if using yield, False for return
-        
+
         # APP STORE METADATA
         display_name="Weather Bot",      # User-facing name (max 20 chars)
                                          # Shown in bot cards and headers
-        
+
         subtitle="Real-time weather",    # Brief tagline (max 30 chars)
                                          # Appears under display name
-        
+
         icon_url="https://...",          # 1024x1024 PNG icon URL
                                          # Bot's profile picture (HTTPS required)
-        
+
         icon_emoji="🌤️",                 # Emoji icon alternative
                                          # Used if icon_url not provided (max 10 chars)
-        
+
         preview_video_url="https://...", # Demo video URL (HTTPS required)
                                          # Shows bot capabilities
-        
+
         description="Get accurate weather forecasts worldwide.",
                                          # Full Markdown description
                                          # Supports **bold**, *italic*, etc.
-        
+
         example_chats=[                  # Sample example chats from bubbletea
             "https://bubbletea.chat/chat/your-bot/shared/token-generated",
             "https://bubbletea.chat/chat/your-bot/shared/token-generated"
         ],
-        
+
         discoverable=True,               # Show in Bot Discovery page
                                          # False to hide from listings
-        
+
         entrypoint="/weather",           # Launch context/action (optional)
                                          # Initial page or command
-        
+
         # ACCESS CONTROL
         visibility="public",             # Bot visibility: "public" or "private"
                                          # Controls who can access the bot
-        
+
         authorized_emails=[              # Whitelist for private bots
             "user@example.com",          # Only these emails can access
             "team@company.com"           # if visibility="private"
         ],
-        
+
         # SUBSCRIPTION & PAYMENT
         subscription_monthly_price=0,    # Monthly price in cents
                                          # 0 = free
                                          # 499 = $4.99/month
                                          # 999 = $9.99/month
-        
+
         # USER EXPERIENCE
         initial_text="Hello! Which city's weather would you like?",
                                          # First message shown to users
                                          # Sets the conversation tone
-        
+
         # ADVANCED CONFIGURATION
         cors_config={                    # Custom CORS settings (optional)
             "allow_origins": ["*"],      # Override default CORS
@@ -338,7 +338,7 @@ Streaming provides a better user experience by showing responses as they're gene
 async def stream_bot(message: str):
     # Show loading indicator
     return bt.Block(timeout=1000)
-    
+
     # Stream response chunks
     llm = LLM(model="gpt-4")
     async for chunk in llm.stream(message):
@@ -351,7 +351,7 @@ Bubbletea automatically provides context about users and conversations. This let
 
 ```python
 @bt.chatbot
-def contextual_bot(message: str, user_uuid: str = None, 
+def contextual_bot(message: str, user_uuid: str = None,
                   conversation_uuid: str = None,
                   user_email: str = None):
     # Access user and conversation context
@@ -362,7 +362,7 @@ def contextual_bot(message: str, user_uuid: str = None,
         response += f"\nConversation: {conversation_uuid}"
     if user_email:
         response += f"\nEmail: {user_email}"
-    
+
     return bt.Text(response)
 ```
 
@@ -377,7 +377,7 @@ Bubbletea automatically organizes chats into conversation threads, similar to po
 # Users can have multiple conversations
 
 @bt.chatbot
-def bot_with_memory(message: str, 
+def bot_with_memory(message: str,
                     conversation_uuid: str):
     # Access conversation history if needed
     # Bubbletea handles the persistence
@@ -455,7 +455,7 @@ def general_bot(message: str):
 if __name__ == "__main__":
     # Run all registered bots
     bt.run_server(port=8000)
-    
+
     # Or run specific bots only
     # bt.run_server([support_bot, sales_bot], port=8000)
 ```
@@ -510,15 +510,16 @@ Swagger UI provides a complete reference for your bot's API, making it easy to t
 
 ### 9. API Reference
 
-The API lets you programmatically manage your bots and subaccounts. To get started:
+The Bubbletea API lets you programmatically manage your bots through subaccounts. To get started:
 
 1. Go to https://bubbletea.chat
 2. Sign in with your Bubbletea account
 3. Navigate to Settings → API Keys
-4. Create a new API key for your account or subaccount
-5. Copy and store your API key securely
+4. Your API key will be displayed
+5. Click the copy button to copy your API key
+6. You can copy your API key anytime from the dashboard
 
-*Note: Keep your API key secret. You can regenerate it anytime from the dashboard if compromised.*
+*Note: Keep your API key secret. You can always access and copy it again from the subaccount dashboard. If compromised, regenerate it immediately.*
 
 #### Authentication
 
@@ -529,12 +530,12 @@ All API requests require your API key in the X-API-Key header:
 -H "X-API-Key: your-api-key-here"
 ```
 
-#### Get Developer Profile
+#### Get Account Profile
 
-Retrieve your developer account information
+Retrieve your account information
 
 ```bash
-curl -X GET https://backend.bubbletea.chat/v1/developer/profile \
+curl -X GET https://backend.bubbletea.chat/v1/profile \
   -H "X-API-Key: your-api-key-here"
 ```
 
@@ -644,6 +645,54 @@ curl -X POST https://backend.bubbletea.chat/v1/developer/bots/my-bot/test \
   }'
 ```
 
+#### Create Conversation
+
+Create a new conversation between a user and your bot
+
+```bash
+curl -X POST https://backend.bubbletea.chat/v1/developer/conversations/create \
+  -H "X-API-Key: your-api-key-here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_uuid": "user-uuid-here",
+    "bot_name": "my-bot"
+  }'
+```
+
+#### Create Message in Conversation
+
+Add a new message to an existing conversation
+
+```bash
+curl -X POST https://backend.bubbletea.chat/v1/developer/conversation/{conversation-uuid}/message \
+  -H "X-API-Key: your-api-key-here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": {
+      "type": "text",
+      "text": "Hello from user!"
+    },
+    "sender": "user",
+    "sender_account_id": "user-account-id"
+  }'
+```
+
+#### Create Bot Message
+
+Send a message as the bot in a conversation
+
+```bash
+curl -X POST https://backend.bubbletea.chat/v1/developer/conversation/{conversation-uuid}/bot-message \
+  -H "X-API-Key: your-api-key-here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "text",
+    "text": "Hello from bot!"
+  }'
+```
+
+**💡 Pro Tip:** Use the conversation APIs to build integrations, webhooks, or custom chat experiences. You can programmatically create conversations and send messages on behalf of users or your bots.
+
 ### 10. LiteLLM Integration
 
 LiteLLM gives you instant access to 100+ language models through a single, unified interface. Switch between OpenAI, Anthropic, Google, and open-source models with just one line of code. This flexibility lets you choose the best model for each task without rewriting your bot:
@@ -695,15 +744,17 @@ async def multi_llm_bot(message: str):
 
 ### Organize Your Bots with Subaccounts
 
-Subaccounts allow you to organize and manage multiple bots under a single parent account. Each subaccount operates independently with its own bots, settings, and API keys, while the parent account maintains full oversight and control.
+Subaccounts allow you to organize and manage multiple bots under a single parent account. Each subaccount operates independently with its single bot and settings, while the parent account maintains full oversight and control.
 
 #### Parent Account & Subaccount Relationship
+
 - **Parent Account**: Your main account that can create and manage multiple subaccounts
 - **Subaccounts**: Child accounts under your parent that isolate bots and resources
 - **Hierarchy**: Parent → Subaccounts → Bots (each bot belongs to one subaccount)
 - **Access Control**: Parent account has full access to all subaccounts and their bots
 
 #### Key Features
+
 - **Project Organization**: Group bots by project, client, or environment
 - **Isolated API Keys**: Each subaccount has its own API key for enhanced security
 - **Usage Tracking**: Monitor usage and billing per subaccount
@@ -711,7 +762,9 @@ Subaccounts allow you to organize and manage multiple bots under a single parent
 - **Parent Oversight**: Parent account can view and manage all subaccounts
 
 #### Parent Account Capabilities
+
 The parent account has special privileges:
+
 - **Create/Delete Subaccounts**: Manage the lifecycle of all subaccounts
 - **Access All Bots**: View and manage bots across all subaccounts
 - **Consolidated Billing**: All subaccount usage is billed to the parent
@@ -720,13 +773,73 @@ The parent account has special privileges:
 - **Transfer Bots**: Move bots between subaccounts as needed
 
 #### Creating a Subaccount
-1. Navigate to [bubbletea.chat](https://bubbletea.chat)
-2. Click on your profile menu
-3. Select "Manage Subaccounts"
-4. Click "Create New Subaccount"
-5. Enter a unique handle for your subaccount
-6. Your subaccount is ready to use!
-7. Switch to the subaccount to start adding bot(each subaccount can have 1)
+
+Follow these steps to create and manage subaccounts in the Bubbletea platform:
+
+**📱 Step 1: Access Developer Dashboard**
+
+1. Open the dropdown menu from the header of the Chats screen
+2. Click on "Developer" to navigate to the subaccounts
+
+**➕ Step 2: Create New Subaccount**
+
+1. Click the "+" icon in the header of the Subaccounts screen
+2. The "Add Subaccount" modal will open
+3. Enter a unique handle for your subaccount
+4. Click "Add Subaccount" to create it
+
+*💡 Handle Behavior:*
+- If the handle exists: It will be linked to your account
+- If the handle doesn't exist: A new subaccount will be created
+
+**🤖 Step 3: Add Bot to Subaccount**
+
+1. Click on the newly created subaccount from the list to switch from parent to subaccount
+2. Click the "Your Bot" button to start adding a bot
+3. The "Add New Bot" modal will open
+4. Enter your bot's URL (endpoint where your bot is hosted)
+5. Click "Create Bot" - the bot configuration will be automatically fetched from your /config endpoint
+6. Your bot is now live and ready to chat!
+
+*🔧 Bot Configuration:*
+- Bot data is automatically fetched from your bot's /config endpoint
+- Make sure your bot URL is accessible and has a /config route
+- Each subaccount can have exactly 1 bot
+
+**💡 Best Practices & Tips**
+
+*✅ Bot Development Workflow:*
+- Test your bot locally first before adding to Bubbletea
+- Ensure your bot has a /config endpoint that returns valid configuration
+- Use descriptive subaccount handles (e.g., "customer-support", "sales-bot")
+- Keep your bot URL accessible and stable
+
+*🔧 Technical Requirements:*
+- Bot URL must be publicly accessible
+- Must respond to POST requests at /chat endpoint
+- Must have GET /config endpoint for configuration
+- HTTPS recommended for production bots
+
+**Switching Between Accounts**
+
+Easily switch between your parent account and subaccounts to manage different bots. This is essential for managing multiple bots across different projects or teams.
+
+**📱 How to Switch to a Subaccount**
+
+1. Go to the Subaccounts page (Developer → Subaccounts)
+2. Find the subaccount you want to switch to in the list
+3. Click on the subaccount name to switch into that account context
+4. You're now working within the selected subaccount
+5. All bot operations will now apply to this subaccount
+
+**🏠 Switching Back to Parent Account**
+
+1. Click the parent account name shown above the subaccounts section
+2. Wait for the account switch to complete
+3. You're now back in your parent account context
+4. You can now manage all subaccounts and view the overview
+
+Subaccounts help you keep your bots organized and secure while giving you the flexibility to manage multiple projects under one roof.
 
 
 ## Deploying Bots
@@ -816,10 +929,10 @@ Create stunning images from text descriptions using DALL-E 3. This bot transform
 @bt.chatbot
 async def art_bot(message: str):
     llm = LLM(model="dall-e-3")
-    
+
     # Generate image from prompt
     image_url = await llm.agenerate_image(message)
-    
+
     # Return the generated image
     return [bt.Image(image_url), bt.Text("Your image is ready!")]
 ```
@@ -886,7 +999,7 @@ Showcase all of Bubbletea's UI components in one bot. This example demonstrates 
 @bt.chatbot
 async def multimodal_bot(message: str):
     return [bt.Markdown("# Welcome!"), bt.Text("I can show different content types:")
-    
+
     , bt.Markdown("""
     - 📝 **Text** messages
     - 🎨 **Images** and media
@@ -926,10 +1039,10 @@ app.use(express.json());
 
 app.post('/chat', async (req, res) => {
   const { message, user_uuid, conversation_uuid } = req.body;
-  
+
   // Your bot logic here
   const response = await processMessage(message);
-  
+
   // Return Bubbletea-compatible response format
   res.json({
     responses: [{
