@@ -81,6 +81,8 @@ Your bot is now accessible at:
 - 🌐 Web: https://bubbletea.chat/echobot
 - 📱 iOS & Android: Bubbletea mobile app
 
+**📱 Note:** Guest mode (try bots without signing up) is currently available on iOS only.
+
 ---
 
 ## Components / Package
