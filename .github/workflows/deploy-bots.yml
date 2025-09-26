@@ -1,0 +1,107 @@
+name: Deploy Bots to Cloud Run
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Configure Docker for Artifact Registry
+      run: gcloud auth configure-docker us-east1-docker.pkg.dev --quiet
+
+    - name: Detect bots and decide when to build
+      id: detect_bots
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        declare -A BOT_DIRS=()
+        for dir in bots/*/; do
+          dir="${dir%/}"
+          bot_name="${dir#bots/}"
+          [[ -f "$dir/bot.py" && -f "$dir/requirements.txt" ]] && BOT_DIRS["$bot_name"]=1
+        done
+
+        CHANGED_BOTS=""
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ] \
+           || [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ] \
+           || [ -z "${{ github.event.before }}" ]; then
+          for k in "${!BOT_DIRS[@]}"; do CHANGED_BOTS+="$k"$'\n'; done
+        else
+          CHANGED_FILES="$(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" || true)"
+          declare -A TOUCHED_BOTS=()
+          while IFS= read -r p; do
+            [[ -z "$p" ]] && continue
+            if [[ "$p" == bots/*/* ]]; then
+              bot_path="${p#bots/}"
+              bot_name="${bot_path%%/*}"
+              TOUCHED_BOTS["$bot_name"]=1
+            fi
+          done <<< "$CHANGED_FILES"
+          for bot in "${!TOUCHED_BOTS[@]}"; do
+            [[ -n "${BOT_DIRS[$bot]:-}" ]] && CHANGED_BOTS+="$bot"$'\n'
+          done
+        fi
+
+        CHANGED_BOTS="$(printf '%s' "$CHANGED_BOTS" | sed '/^$/d' | sort -u)"
+        {
+          echo "changed_bots<<EOF"
+          printf '%s\n' "$CHANGED_BOTS"
+          echo "EOF"
+        } >> "$GITHUB_OUTPUT"
+
+    - name: No bots selected (skip)
+      if: steps.detect_bots.outputs.changed_bots == ''
+      run: |
+        echo "No bot folders selected."
+        exit 0
+
+    - name: Build and push Docker images
+      if: steps.detect_bots.outputs.changed_bots != ''
+      shell: bash
+      run: |
+        set -euo pipefail
+        [[ -f "bots/Dockerfile" ]] || { echo "bots/Dockerfile not found!"; exit 1; }
+        while IFS= read -r BOT_NAME; do
+          [[ -z "${BOT_NAME:-}" ]] && continue
+          IMAGE_TAG="us-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/bots-repo/$BOT_NAME"
+          docker build \
+            --build-arg BOT_DIR="bots/$BOT_NAME" \
+            -f bots/Dockerfile \
+            -t "$IMAGE_TAG:${GITHUB_SHA}" \
+            -t "$IMAGE_TAG:latest" \
+            .
+          docker push "$IMAGE_TAG:${GITHUB_SHA}"
+          docker push "$IMAGE_TAG:latest"
+        done <<< "${{ steps.detect_bots.outputs.changed_bots }}"
+
+    - name: Deploy to Cloud Run (inject all secrets) + Slack notify
+      if: steps.detect_bots.outputs.changed_bots != ''
+      shell: bash
+      env:
+        GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        GITHUB_SHA: ${{ github.sha }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+      run: |
+        chmod +x .github/scripts/deploy-and-notify.sh
+        .github/scripts/deploy-and-notify.sh "${{ steps.detect_bots.outputs.changed_bots }}"

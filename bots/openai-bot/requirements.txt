@@ -1,0 +1,4 @@
+bubbletea-chat[llm]
+openai
+httpx
+python-dotenv

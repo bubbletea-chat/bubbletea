@@ -1,0 +1,9 @@
+bubbletea-chat
+python-dotenv
+opencv-python
+pillow
+numpy
+moviepy
+requests
+google-generativeai
+supabase

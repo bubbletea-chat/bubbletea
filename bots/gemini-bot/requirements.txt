@@ -1,0 +1,4 @@
+bubbletea-chat
+google-generativeai
+python-dotenv
+httpx

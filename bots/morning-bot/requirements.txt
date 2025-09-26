@@ -1,0 +1,7 @@
+bubbletea-chat
+openai
+requests
+python-dotenv
+supabase
+pytz
+schedule
