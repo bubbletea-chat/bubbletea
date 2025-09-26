@@ -1,7 +1,7 @@
 import os
 
-import bubbletea_chat as bt
 import google.generativeai as genai
+import bubbletea_chat as bt
 from dotenv import load_dotenv
 
 load_dotenv()
