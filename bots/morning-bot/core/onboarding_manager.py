@@ -36,7 +36,7 @@ class OnboardingManager:
         # (timezone has a default value)
         return location is not None
 
-    def start_onboarding(self) -> bt.Component:
+    def start_onboarding(self):
         """
         Start the onboarding flow
 
@@ -55,7 +55,7 @@ I'm here to help you start each day with personalized morning briefs containing:
 Let's get you set up with a quick configuration process."""
         )
 
-    def get_location_setup(self) -> bt.Component:
+    def get_location_setup(self):
         """
         Get location setup component
 
@@ -68,7 +68,7 @@ Let's get you set up with a quick configuration process."""
             multiline=False,
         )
 
-    def process_location(self, location: str) -> bt.Component:
+    def process_location(self, location: str):
         """
         Process user's location input
 
@@ -89,7 +89,7 @@ Let's get you set up with a quick configuration process."""
         else:
             return bt.Markdown("❌ There was an issue saving your location. Please try again.")
 
-    def get_timezone_setup(self) -> bt.Component:
+    def get_timezone_setup(self):
         """
         Get timezone setup component
 
@@ -110,7 +110,7 @@ Let's get you set up with a quick configuration process."""
 
         return bt.Pills("What's your timezone?", options=common_timezones, allow_multiple=False)
 
-    def process_timezone(self, timezone: str) -> bt.Component:
+    def process_timezone(self, timezone: str):
         """
         Process user's timezone selection
 
@@ -127,7 +127,7 @@ Let's get you set up with a quick configuration process."""
         else:
             return bt.Markdown("❌ There was an issue saving your timezone. Please try again.")
 
-    def get_news_preferences_setup(self) -> bt.Component:
+    def get_news_preferences_setup(self):
         """
         Get news preferences setup component
 
@@ -140,7 +140,7 @@ Let's get you set up with a quick configuration process."""
             "Which news categories interest you? (Select multiple)", options=news_categories, allow_multiple=True
         )
 
-    def process_news_preferences(self, categories: List[str]) -> bt.Component:
+    def process_news_preferences(self, categories: List[str]):
         """
         Process user's news category preferences
 
@@ -161,7 +161,7 @@ Let's get you set up with a quick configuration process."""
         else:
             return bt.Markdown("❌ There was an issue saving your news preferences.")
 
-    def get_schedule_setup(self) -> bt.Component:
+    def get_schedule_setup(self):
         """
         Get schedule setup component
 
@@ -174,7 +174,7 @@ Let's get you set up with a quick configuration process."""
             "What time would you like to receive your morning brief?", options=time_options, allow_multiple=False
         )
 
-    def process_schedule(self, brief_time: str) -> bt.Component:
+    def process_schedule(self, brief_time: str):
         """
         Process user's schedule preference
 
@@ -191,7 +191,7 @@ Let's get you set up with a quick configuration process."""
         else:
             return bt.Markdown("❌ There was an issue saving your schedule preference.")
 
-    def get_brief_sections_setup(self) -> bt.Component:
+    def get_brief_sections_setup(self):
         """
         Get brief sections setup component
 
@@ -204,7 +204,7 @@ Let's get you set up with a quick configuration process."""
             "Which sections would you like in your morning brief?", options=section_options, allow_multiple=True
         )
 
-    def process_brief_sections(self, sections: List[str]) -> bt.Component:
+    def process_brief_sections(self, sections: List[str]):
         """
         Process user's brief section preferences
 
@@ -233,7 +233,7 @@ Let's get you set up with a quick configuration process."""
         else:
             return bt.Markdown("❌ There was an issue saving your section preferences.")
 
-    def complete_onboarding(self) -> bt.Component:
+    def complete_onboarding(self):
         """
         Complete the onboarding process
 
@@ -306,7 +306,7 @@ Type "brief" to get your first morning brief right now, or "help" to see all ava
         """
         return self.user_prefs.reset_preferences()
 
-    def update_preference_during_onboarding(self, preference_key: str, value: Any) -> bt.Component:
+    def update_preference_during_onboarding(self, preference_key: str, value: Any):
         """
         Update a specific preference during onboarding
 

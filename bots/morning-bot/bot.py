@@ -16,7 +16,7 @@ from services.weather_service import WeatherService
 from storage.storage_adapter import StorageAdapter
 
 
-async def handler(input_data: Dict[str, Any]) -> bt.Component:
+async def handler(input_data: Dict[str, Any]):
     """
     Main handler for Morning Brief Bot interactions
 
@@ -78,7 +78,7 @@ async def handler(input_data: Dict[str, Any]) -> bt.Component:
 
 async def handle_onboarding(
     onboarding_manager: OnboardingManager, user_message: str, input_data: Dict[str, Any]
-) -> bt.Component:
+):
     """Handle onboarding flow"""
 
     # Start onboarding if user hasn't started yet
@@ -120,7 +120,7 @@ async def handle_onboarding(
     return onboarding_manager.complete_onboarding()
 
 
-async def generate_morning_brief(user_prefs: UserPreferences) -> bt.Component:
+async def generate_morning_brief(user_prefs: UserPreferences):
     """Generate and return morning brief"""
     try:
         conversation_uuid = user_prefs.conversation_uuid
@@ -172,7 +172,7 @@ async def generate_morning_brief(user_prefs: UserPreferences) -> bt.Component:
         return bt.Markdown("❌ Unable to generate morning brief. Please check your settings and try again.")
 
 
-def get_help_menu() -> bt.Component:
+def get_help_menu():
     """Return help menu with available commands"""
     return bt.Markdown(
         """# 🤖 Morning Brief Bot - Help
@@ -204,7 +204,7 @@ If you haven't completed setup yet, just start typing your location and I'll gui
     )
 
 
-def get_settings_menu(user_prefs: UserPreferences) -> bt.Component:
+def get_settings_menu(user_prefs: UserPreferences):
     """Return current settings and options to modify them"""
     prefs = user_prefs.get_all_preferences()
 
@@ -236,7 +236,7 @@ Type `reset` to restart the full setup process."""
     )
 
 
-async def handle_setting_update(user_message: str, user_prefs: UserPreferences) -> bt.Component:
+async def handle_setting_update(user_message: str, user_prefs: UserPreferences):
     """Handle setting updates from user commands"""
     parts = user_message.split(" ", 2)
 
@@ -282,7 +282,7 @@ async def handle_setting_update(user_message: str, user_prefs: UserPreferences) 
 
 def handle_schedule_management(
     scheduler: Scheduler, conversation_uuid: str, user_prefs: UserPreferences
-) -> bt.Component:
+):
     """Handle schedule management commands"""
     notifications_enabled = user_prefs.get_notifications_enabled()
     is_scheduled = scheduler.is_scheduled(conversation_uuid)
@@ -308,7 +308,7 @@ def handle_schedule_management(
     )
 
 
-def get_brief_history(conversation_uuid: str) -> bt.Component:
+def get_brief_history(conversation_uuid: str):
     """Get user's brief history"""
     storage = StorageAdapter()
     briefs = storage.get_recent_morning_briefs(conversation_uuid, limit=5)
@@ -326,7 +326,7 @@ def get_brief_history(conversation_uuid: str) -> bt.Component:
     return bt.Markdown(history_text)
 
 
-def handle_reset(onboarding_manager: OnboardingManager) -> bt.Component:
+def handle_reset(onboarding_manager: OnboardingManager):
     """Handle reset/restart setup"""
     success = onboarding_manager.reset_onboarding()
 
@@ -342,7 +342,7 @@ Please provide your location to get started (e.g., "New York, NY")"""
         return bt.Markdown("❌ Failed to reset settings. Please try again.")
 
 
-def get_user_status(user_prefs: UserPreferences, onboarding_manager: OnboardingManager) -> bt.Component:
+def get_user_status(user_prefs: UserPreferences, onboarding_manager: OnboardingManager):
     """Get user status and configuration summary"""
     is_onboarded = onboarding_manager.is_user_onboarded()
     prefs = user_prefs.get_all_preferences()
@@ -369,7 +369,7 @@ Type `brief` for your morning update or `settings` to make changes."""
     )
 
 
-def get_default_response() -> bt.Component:
+def get_default_response():
     """Default response when user input doesn't match commands"""
     return bt.Markdown(
         """# 👋 Hello!
@@ -387,7 +387,7 @@ I'm your Morning Brief Bot. Here's what I can help you with:
 
 
 @bt.chatbot("morning-bot")
-async def morning_brief_bot(message: str, user_uuid: str = None, conversation_uuid: str = None) -> bt.Component:
+async def morning_brief_bot(message: str, user_uuid: str = None, conversation_uuid: str = None):
     """Main bot handler"""
     return await handler({"conversationUuid": conversation_uuid, "userInput": message})
 
