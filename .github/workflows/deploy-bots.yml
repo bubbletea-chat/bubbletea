@@ -2,7 +2,10 @@ name: Deploy Bots to Cloud Run
 
 on:
   push:
-    branches: [master]
+    branches: [main]
+    paths:
+      - 'bots/**'
+      - '.github/workflows/deploy-bots.yml'
   workflow_dispatch: {}
 
 jobs:

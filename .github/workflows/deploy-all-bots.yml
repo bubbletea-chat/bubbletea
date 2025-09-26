@@ -105,7 +105,7 @@ jobs:
       shell: bash
       run: |
         echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
-        echo "All bots from master branch have been processed for deployment." >> $GITHUB_STEP_SUMMARY
+        echo "All bots from main branch have been processed for deployment." >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### Bots processed:" >> $GITHUB_STEP_SUMMARY
         while IFS= read -r BOT_NAME; do
