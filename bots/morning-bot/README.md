@@ -10,7 +10,7 @@ An intelligent morning briefing bot built for the BubbleTea Chat platform. Get p
 - **Interactive Onboarding**: Easy setup process with location, interests, and time preferences
 - **Real-time Weather**: Current weather conditions and forecasts using OpenAI's web search
 - **Curated News**: Relevant news headlines filtered by your selected topics
-- **Persistent Storage**: User preferences stored in Supabase database
+- **Persistent Storage**: User preferences stored in Firebase Firestore database
 - **Rich UI Components**: Interactive pills and formatted messages
 - **Flexible Commands**: Multiple ways to interact with the bot
 
@@ -45,16 +45,17 @@ Create a `.env` file with the following variables:
 OPENAI_API_KEY=your_openai_api_key_here
 BUBBLETEA_API_KEY=your_bubbletea_api_key_here
 
-# Supabase (for persistent storage)
-SUPABASE_URL=your_supabase_project_url
-SUPABASE_KEY=your_supabase_service_role_key
+# Firebase (for persistent storage)
+FIREBASE_PROJECT_ID=your_firebase_project_id
+FIREBASE_PRIVATE_KEY=your_firebase_private_key
+FIREBASE_CLIENT_EMAIL=your_firebase_client_email
 ```
 
 ### Prerequisites
 - Python 3.8+
 - BubbleTea Chat SDK
 - OpenAI API access
-- Supabase database (optional, for persistent storage)
+- Firebase Firestore database (optional, for persistent storage)
 
 ## Commands
 
@@ -94,7 +95,7 @@ SUPABASE_KEY=your_supabase_service_role_key
 
 **NotificationService**: Handles communication with the BubbleTea API
 
-**StorageAdapter**: Provides abstraction for data persistence (Supabase implementation)
+**StorageAdapter**: Provides abstraction for data persistence (Firebase Firestore implementation)
 
 
 ### AI Integration
@@ -130,7 +131,7 @@ python bot.py
 
 ### Integration Testing
 - Verify OpenAI API connectivity
-- Test Supabase database operations
+- Test Firebase Firestore database operations
 - Confirm BubbleTea API notifications
 - Validate scheduler timing accuracy
 

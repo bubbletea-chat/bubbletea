@@ -45,14 +45,19 @@ class Config:
         return os.getenv("BOT_HOST", "0.0.0.0")
 
     @property
-    def supabase_url(self) -> Optional[str]:
-        """Get Supabase URL"""
-        return os.getenv("SUPABASE_URL")
+    def firebase_project_id(self) -> Optional[str]:
+        """Get Firebase Project ID"""
+        return os.getenv("FIREBASE_PROJECT_ID")
 
     @property
-    def supabase_key(self) -> Optional[str]:
-        """Get Supabase service role key"""
-        return os.getenv("SUPABASE_KEY")
+    def firebase_private_key(self) -> Optional[str]:
+        """Get Firebase Private Key"""
+        return os.getenv("FIREBASE_PRIVATE_KEY")
+
+    @property
+    def firebase_client_email(self) -> Optional[str]:
+        """Get Firebase Client Email"""
+        return os.getenv("FIREBASE_CLIENT_EMAIL")
 
 
 config = Config()
@@ -61,5 +66,6 @@ OPENAI_API_KEY = config.openai_api_key
 BUBBLETEA_API_KEY = config.bubbletea_api_key
 BUBBLETEA_API_URL = config.bubbletea_api_url
 BUBBLETEA_BOT_NAME = config.bubbletea_bot_name
-SUPABASE_URL = config.supabase_url
-SUPABASE_KEY = config.supabase_key
+FIREBASE_PROJECT_ID = config.firebase_project_id
+FIREBASE_PRIVATE_KEY = config.firebase_private_key
+FIREBASE_CLIENT_EMAIL = config.firebase_client_email

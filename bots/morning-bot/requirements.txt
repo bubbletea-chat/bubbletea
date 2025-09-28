@@ -2,6 +2,7 @@ bubbletea-chat
 openai
 requests
 python-dotenv
-supabase
+firebase-admin
+google-cloud-firestore
 pytz
 schedule
