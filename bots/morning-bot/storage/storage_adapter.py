@@ -63,19 +63,22 @@ class StorageAdapter:
             if not self.is_connected or not self.db:
                 return False
                 
-            # Create document reference
-            doc_ref = self.db.collection('user_preferences').document(f"{conversation_uuid}_{preference_key}")
+            # Create/update single document for all preferences
+            doc_ref = self.db.collection('user_preferences').document(conversation_uuid)
             
-            # Prepare data
-            data = {
+            # Convert value to JSON string if it's a complex type
+            if isinstance(preference_value, (list, dict)):
+                stored_value = json.dumps(preference_value)
+            else:
+                stored_value = str(preference_value)
+            
+            # Use merge to update only the specific field without overwriting others
+            doc_ref.set({
+                preference_key: stored_value,
                 "conversation_uuid": conversation_uuid,
-                "preference_key": preference_key,
-                "preference_value": str(preference_value),
                 "updated_at": datetime.now().isoformat(),
-            }
+            }, merge=True)
             
-            # Set document (upsert)
-            doc_ref.set(data)
             return True
             
         except Exception as e:
@@ -98,15 +101,14 @@ class StorageAdapter:
             if not self.is_connected or not self.db:
                 return default_value
                 
-            # Get document reference
-            doc_ref = self.db.collection('user_preferences').document(f"{conversation_uuid}_{preference_key}")
-            
-            # Get document
+            # Get single document containing all preferences
+            doc_ref = self.db.collection('user_preferences').document(conversation_uuid)
             doc = doc_ref.get()
             
             if doc.exists:
                 data = doc.to_dict()
-                return self._parse_preference_value(data.get("preference_value", default_value))
+                if preference_key in data:
+                    return self._parse_preference_value(data.get(preference_key, default_value))
                 
             return default_value
             
@@ -128,20 +130,22 @@ class StorageAdapter:
             if not self.is_connected or not self.db:
                 return {}
                 
-            # Query all preferences for the conversation
-            prefs_ref = self.db.collection('user_preferences')
-            query = prefs_ref.where(filter=FieldFilter("conversation_uuid", "==", conversation_uuid))
-            docs = query.stream()
+            # Get single document containing all preferences
+            doc_ref = self.db.collection('user_preferences').document(conversation_uuid)
+            doc = doc_ref.get()
             
-            preferences = {}
-            for doc in docs:
+            if doc.exists:
                 data = doc.to_dict()
-                key = data.get("preference_key")
-                value = self._parse_preference_value(data.get("preference_value"))
-                if key:
-                    preferences[key] = value
+                preferences = {}
+                
+                # Parse each preference value, excluding metadata fields
+                for key, value in data.items():
+                    if key not in ['conversation_uuid', 'updated_at']:
+                        preferences[key] = self._parse_preference_value(value)
+                
+                return preferences
             
-            return preferences
+            return {}
             
         except Exception as e:
             self._log_error("retrieving all preferences", e)
@@ -240,11 +244,9 @@ class StorageAdapter:
                 
             success = True
             
-            # Delete user preferences
-            prefs_ref = self.db.collection('user_preferences')
-            prefs_query = prefs_ref.where(filter=FieldFilter("conversation_uuid", "==", conversation_uuid))
-            for doc in prefs_query.stream():
-                doc.reference.delete()
+            # Delete single user preferences document
+            prefs_ref = self.db.collection('user_preferences').document(conversation_uuid)
+            prefs_ref.delete()
             
             # Delete morning briefs
             briefs_ref = self.db.collection('morning_briefs')
@@ -419,14 +421,11 @@ class StorageAdapter:
             if not self.is_connected or not self.db:
                 return []
                 
-            # Query users by wake_time preference
+            # Query all user preference documents
             prefs_ref = self.db.collection('user_preferences')
-            
-            # Get all wake_time preferences matching the specified time
+            # Query documents that have the wake_time field matching the specified time
             wake_time_query = prefs_ref.where(
-                filter=FieldFilter("preference_key", "==", "wake_time")
-            ).where(
-                filter=FieldFilter("preference_value", "==", wake_time)
+                filter=FieldFilter("wake_time", "==", wake_time)
             )
             
             wake_time_docs = wake_time_query.stream()
@@ -434,23 +433,25 @@ class StorageAdapter:
             users = []
             for doc in wake_time_docs:
                 data = doc.to_dict()
-                conversation_uuid = data.get("conversation_uuid")
+                conversation_uuid = doc.id  # Document ID is the conversation UUID
                 
-                if conversation_uuid:
-                    # Get all preferences for this user
-                    all_prefs = self.get_all_user_preferences(conversation_uuid)
-                    
-                    # Only include users who have completed onboarding
-                    if all_prefs.get('onboarding_state') == 'completed':
-                        users.append({
-                            'user_uuid': conversation_uuid,
-                            'conversation_uuid': conversation_uuid,
-                            'location': all_prefs.get('location'),
-                            'news_interests': all_prefs.get('news_interests', []),
-                            'wake_time': wake_time,
-                            'timezone': all_prefs.get('timezone', 'UTC'),
-                            'onboarding_state': all_prefs.get('onboarding_state')
-                        })
+                # Parse stored preference values
+                preferences = {}
+                for key, value in data.items():
+                    if key not in ['conversation_uuid', 'updated_at']:
+                        preferences[key] = self._parse_preference_value(value)
+                
+                # Only include users who have completed onboarding
+                if preferences.get('onboarding_state') == 'completed':
+                    users.append({
+                        'user_uuid': conversation_uuid,
+                        'conversation_uuid': conversation_uuid,
+                        'location': preferences.get('location'),
+                        'news_interests': preferences.get('news_interests', []),
+                        'wake_time': wake_time,
+                        'timezone': preferences.get('timezone', 'UTC'),
+                        'onboarding_state': preferences.get('onboarding_state')
+                    })
                         
             return users
             
@@ -469,32 +470,30 @@ class StorageAdapter:
             if not self.is_connected or not self.db:
                 return []
                 
-            # Get all unique conversation UUIDs
+            # Get all user preference documents
             prefs_ref = self.db.collection('user_preferences')
             all_docs = prefs_ref.stream()
             
-            # Use a set to store unique conversation UUIDs
-            conversation_uuids = set()
+            users = []
             for doc in all_docs:
                 data = doc.to_dict()
-                conv_uuid = data.get("conversation_uuid")
-                if conv_uuid:
-                    conversation_uuids.add(conv_uuid)
-            
-            # Get all preferences for each unique user
-            users = []
-            for conv_uuid in conversation_uuids:
-                all_prefs = self.get_all_user_preferences(conv_uuid)
+                conversation_uuid = doc.id  # Document ID is the conversation UUID
                 
-                if all_prefs:
+                # Parse stored preference values
+                preferences = {}
+                for key, value in data.items():
+                    if key not in ['conversation_uuid', 'updated_at']:
+                        preferences[key] = self._parse_preference_value(value)
+                
+                if preferences:  # Only add if user has preferences
                     users.append({
-                        'user_uuid': conv_uuid,
-                        'conversation_uuid': conv_uuid,
-                        'location': all_prefs.get('location'),
-                        'news_interests': all_prefs.get('news_interests', []),
-                        'wake_time': all_prefs.get('wake_time'),
-                        'timezone': all_prefs.get('timezone', 'UTC'),
-                        'onboarding_state': all_prefs.get('onboarding_state', 'not_started')
+                        'user_uuid': conversation_uuid,
+                        'conversation_uuid': conversation_uuid,
+                        'location': preferences.get('location'),
+                        'news_interests': preferences.get('news_interests', []),
+                        'wake_time': preferences.get('wake_time'),
+                        'timezone': preferences.get('timezone', 'UTC'),
+                        'onboarding_state': preferences.get('onboarding_state', 'not_started')
                     })
                     
             return users
