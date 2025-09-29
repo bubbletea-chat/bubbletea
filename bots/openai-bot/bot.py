@@ -21,9 +21,12 @@ async def process_message_async(message: str,
 
     llm = LLM(model="gpt-4", llm_provider="openai")
 
-    if thread_id:
-        # Handle images if provided
-        response = llm.get_assistant_response(thread_id, message)
+    # Ensure we have a thread_id
+    if not thread_id:
+        thread_id = llm.create_thread(user_uuid)
+    
+    # Get the assistant response with the message
+    response = llm.get_assistant_response(thread_id, message)
 
     # Create the message component
     result = bt.Markdown(response)
@@ -64,12 +67,7 @@ def gpt_assistant(message: str,
                   conversation_uuid: str = None):
     # Start async processing in background
 
-    llm = LLM(model="gpt-4", llm_provider="openai")
     print(f"Processing ChatGPT message for conversation: {conversation_uuid}")
-
-    # Check if thread_id exists, if not create one
-    if not thread_id:
-        thread_id = llm.create_thread(user_uuid)
 
     asyncio.create_task(
         process_message_async(message=message,
@@ -77,6 +75,11 @@ def gpt_assistant(message: str,
                               user_uuid=user_uuid,
                               thread_id=thread_id))
 
+    # Create thread_id if needed for response tracking
+    if not thread_id:
+        llm = LLM(model="gpt-4", llm_provider="openai")
+        thread_id = llm.create_thread(user_uuid)
+    
     responses = [
         bt.Text(
             "Processing your message... You'll receive a response shortly!"),
