@@ -221,4 +221,4 @@ def get_config():
 
 
 if __name__ == "__main__":
-    bt.run_server(morning_brief_bot, port=5000, host="0.0.0.0")
+    bt.run_server(morning_brief_bot, port=8080, host="0.0.0.0")
