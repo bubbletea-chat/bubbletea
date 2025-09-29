@@ -267,6 +267,242 @@ class StorageAdapter:
             # Return as string if not valid JSON
             return value
 
+    def load(self, key: str) -> Optional[Dict[str, Any]]:
+        """
+        Load data from Firestore based on key pattern
+        Compatible with the abstract StorageAdapter interface
+        
+        Args:
+            key: The storage key (file path pattern)
+            
+        Returns:
+            Dictionary with the loaded data or None
+        """
+        try:
+            if not self.is_connected or not self.db:
+                return None
+                
+            # Parse the key to determine what to load
+            if "preferences.json" in key:
+                # Extract user_uuid from path like "user_data/{user_uuid}/preferences.json"
+                user_uuid = key.split('/')[1] if '/' in key else key
+                
+                # Get all preferences for this user
+                preferences = self.get_all_user_preferences(user_uuid)
+                
+                if preferences:
+                    # Return in expected format
+                    return {
+                        'user_uuid': user_uuid,
+                        'location': preferences.get('location'),
+                        'news_interests': preferences.get('news_interests', []),
+                        'wake_time': preferences.get('wake_time'),
+                        'timezone': preferences.get('timezone', 'UTC'),
+                        'onboarding_state': preferences.get('onboarding_state', 'not_started'),
+                        'conversation_uuid': preferences.get('conversation_uuid'),
+                        'created_at': preferences.get('created_at'),
+                        'updated_at': preferences.get('updated_at')
+                    }
+                    
+            elif "morning_brief.json" in key:
+                # Extract user_uuid from path
+                user_uuid = key.split('/')[1] if '/' in key else key
+                
+                # Get the most recent brief
+                briefs = self.get_recent_morning_briefs(user_uuid, limit=1)
+                
+                if briefs:
+                    data = briefs[0]
+                    return {
+                        'user_uuid': user_uuid,
+                        'brief': data.get('brief_content'),
+                        'timestamp': data.get('created_at')
+                    }
+                    
+            return None
+            
+        except Exception as e:
+            self._log_error(f"loading from key {key}", e)
+            return None
+    
+    def save(self, key: str, data: Dict[str, Any]) -> bool:
+        """
+        Save data to Firestore based on key pattern
+        Compatible with the abstract StorageAdapter interface
+        
+        Args:
+            key: The storage key (file path pattern)
+            data: The data to save
+            
+        Returns:
+            True if saved successfully, False otherwise
+        """
+        try:
+            if not self.is_connected or not self.db:
+                return False
+                
+            if "preferences.json" in key:
+                # Saving user preferences
+                user_uuid = data.get('user_uuid')
+                if not user_uuid:
+                    return False
+                    
+                # Store each preference
+                for pref_key, pref_value in data.items():
+                    if pref_key != 'user_uuid':
+                        self.store_user_preference(user_uuid, pref_key, pref_value)
+                        
+                return True
+                
+            elif "morning_brief.json" in key:
+                # Saving morning brief
+                user_uuid = data.get('user_uuid')
+                brief = data.get('brief')
+                
+                if user_uuid and brief:
+                    return self.store_morning_brief(user_uuid, brief)
+                    
+            return False
+            
+        except Exception as e:
+            self._log_error(f"saving to key {key}", e)
+            return False
+    
+    def exists(self, key: str) -> bool:
+        """
+        Check if data exists in Firestore
+        Compatible with the abstract StorageAdapter interface
+        
+        Args:
+            key: The storage key to check
+            
+        Returns:
+            True if exists, False otherwise
+        """
+        try:
+            if not self.is_connected or not self.db:
+                return False
+                
+            if "preferences.json" in key:
+                user_uuid = key.split('/')[1] if '/' in key else key
+                preferences = self.get_all_user_preferences(user_uuid)
+                return len(preferences) > 0
+                
+            elif "morning_brief.json" in key:
+                user_uuid = key.split('/')[1] if '/' in key else key
+                briefs = self.get_recent_morning_briefs(user_uuid, limit=1)
+                
+                # Check if brief exists for today
+                if briefs:
+                    today = datetime.now().strftime("%Y-%m-%d")
+                    for brief in briefs:
+                        if brief.get('brief_date') == today:
+                            return True
+                            
+            return False
+            
+        except Exception as e:
+            self._log_error(f"checking existence of key {key}", e)
+            return False
+    
+    def get_users_by_wake_time(self, wake_time: str) -> List[Dict[str, Any]]:
+        """
+        Get all users with a specific wake time
+        
+        Args:
+            wake_time: The wake time to filter by (e.g., "08:00")
+            
+        Returns:
+            List of user data dictionaries
+        """
+        try:
+            if not self.is_connected or not self.db:
+                return []
+                
+            # Query users by wake_time preference
+            prefs_ref = self.db.collection('user_preferences')
+            
+            # Get all wake_time preferences matching the specified time
+            wake_time_query = prefs_ref.where(
+                filter=FieldFilter("preference_key", "==", "wake_time")
+            ).where(
+                filter=FieldFilter("preference_value", "==", wake_time)
+            )
+            
+            wake_time_docs = wake_time_query.stream()
+            
+            users = []
+            for doc in wake_time_docs:
+                data = doc.to_dict()
+                conversation_uuid = data.get("conversation_uuid")
+                
+                if conversation_uuid:
+                    # Get all preferences for this user
+                    all_prefs = self.get_all_user_preferences(conversation_uuid)
+                    
+                    # Only include users who have completed onboarding
+                    if all_prefs.get('onboarding_state') == 'completed':
+                        users.append({
+                            'user_uuid': conversation_uuid,
+                            'conversation_uuid': conversation_uuid,
+                            'location': all_prefs.get('location'),
+                            'news_interests': all_prefs.get('news_interests', []),
+                            'wake_time': wake_time,
+                            'timezone': all_prefs.get('timezone', 'UTC'),
+                            'onboarding_state': all_prefs.get('onboarding_state')
+                        })
+                        
+            return users
+            
+        except Exception as e:
+            self._log_error(f"fetching users by wake time {wake_time}", e)
+            return []
+    
+    def get_all_users(self) -> List[Dict[str, Any]]:
+        """
+        Get all users from the database
+        
+        Returns:
+            List of all user data dictionaries
+        """
+        try:
+            if not self.is_connected or not self.db:
+                return []
+                
+            # Get all unique conversation UUIDs
+            prefs_ref = self.db.collection('user_preferences')
+            all_docs = prefs_ref.stream()
+            
+            # Use a set to store unique conversation UUIDs
+            conversation_uuids = set()
+            for doc in all_docs:
+                data = doc.to_dict()
+                conv_uuid = data.get("conversation_uuid")
+                if conv_uuid:
+                    conversation_uuids.add(conv_uuid)
+            
+            # Get all preferences for each unique user
+            users = []
+            for conv_uuid in conversation_uuids:
+                all_prefs = self.get_all_user_preferences(conv_uuid)
+                
+                if all_prefs:
+                    users.append({
+                        'user_uuid': conv_uuid,
+                        'conversation_uuid': conv_uuid,
+                        'location': all_prefs.get('location'),
+                        'news_interests': all_prefs.get('news_interests', []),
+                        'wake_time': all_prefs.get('wake_time'),
+                        'timezone': all_prefs.get('timezone', 'UTC'),
+                        'onboarding_state': all_prefs.get('onboarding_state', 'not_started')
+                    })
+                    
+            return users
+            
+        except Exception as e:
+            self._log_error("fetching all users", e)
+            return []
+
     def _log_error(self, action: str, error: Exception):
         """Log storage errors"""
         print(f"Error while {action}: {str(error)}")

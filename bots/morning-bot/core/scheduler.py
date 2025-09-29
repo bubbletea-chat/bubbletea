@@ -1,354 +1,230 @@
 import threading
 import time
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Callable
-from core.user_preferences import UserPreferences
+import os
+import json
+from datetime import datetime, time as datetime_time
+from typing import Dict, Optional
+from core.user_preferences import UserPreferencesManager, UserPreferences
+from services.weather_service import WeatherService
+from services.news_service import NewsService
 from services.notification_service import NotificationService
 from storage.storage_adapter import StorageAdapter
 
 
-class Scheduler:
-    """Handles scheduling and execution of morning brief notifications"""
+class MorningBriefScheduler:
+    """Scheduler for generating and sending morning briefs"""
 
-    def __init__(self):
-        """Initialize the scheduler"""
+    BRIEFS_DIR = "user_data"
+    CHECK_INTERVAL = 60  # 30 minutes in seconds
+
+    def __init__(self, preferences_manager: UserPreferencesManager,
+                 weather_service: WeatherService, news_service: NewsService):
+        """Initialize scheduler with required services"""
+        self.preferences_manager = preferences_manager
+        self.weather_service = weather_service
+        self.news_service = news_service
         self.notification_service = NotificationService()
         self.storage = StorageAdapter()
-        self._scheduled_tasks: Dict[str, threading.Thread] = {}
-        self._running = True
-        self._lock = threading.Lock()
 
-    def schedule_morning_brief(self, conversation_uuid: str) -> bool:
-        """
-        Schedule morning brief for a user based on their preferences
+        self.running = False
+        self.thread = None
+        self.sent_today: Dict[str, str] = {}  # user_id -> date_sent
 
-        Args:
-            conversation_uuid: The unique conversation identifier
+    def start(self):
+        """Start the scheduler in a background thread"""
+        if not self.running:
+            self.running = True
+            self.thread = threading.Thread(target=self._run_scheduler,
+                                           daemon=True)
+            self.thread.start()
 
-        Returns:
-            True if scheduled successfully, False otherwise
-        """
+    def stop(self):
+        """Stop the scheduler"""
+        self.running = False
+        if self.thread:
+            self.thread.join()
+
+    def _get_user_brief_path(self, user_uuid: str) -> str:
+        """Get the file path for a user's morning brief"""
+        return f"{self.BRIEFS_DIR}/{user_uuid}/morning_brief.json"
+
+    def get_user_brief(self, user_uuid: str) -> Optional[str]:
+        """Get stored morning brief for a user"""
         try:
-            user_prefs = UserPreferences(conversation_uuid)
+            file_path = self._get_user_brief_path(user_uuid)
+            brief_data = self.storage.load(file_path)
 
-            # Check if notifications are enabled
-            if not user_prefs.get_notifications_enabled():
-                return False
-
-            # Get user's preferred time
-            brief_time = user_prefs.get_brief_time()
-
-            # Calculate next execution time
-            next_execution = self._calculate_next_execution_time(brief_time)
-
-            # Cancel existing task if any
-            self.cancel_morning_brief(conversation_uuid)
-
-            # Schedule new task
-            task_thread = threading.Thread(
-                target=self._scheduled_morning_brief_task, args=(conversation_uuid, next_execution), daemon=True
-            )
-
-            with self._lock:
-                self._scheduled_tasks[conversation_uuid] = task_thread
-
-            task_thread.start()
-            return True
-
+            if brief_data and self._is_today(brief_data.get('timestamp')):
+                return brief_data.get('brief')
         except Exception as e:
-            self._log_error(f"scheduling morning brief for {conversation_uuid}", e)
-            return False
+            print(f"Error loading brief for user {user_uuid}: {e}")
 
-    def cancel_morning_brief(self, conversation_uuid: str) -> bool:
-        """
-        Cancel scheduled morning brief for a user
+        return None
 
-        Args:
-            conversation_uuid: The unique conversation identifier
+    def generate_preview(self, user_uuid: str) -> str:
+        """Generate a preview brief for a user"""
+        user_pref = self.preferences_manager.get_or_create_user(user_uuid)
 
-        Returns:
-            True if cancelled successfully, False otherwise
-        """
-        try:
-            with self._lock:
-                if conversation_uuid in self._scheduled_tasks:
-                    # Note: We can't actually cancel a running thread in Python
-                    # This removes it from our tracking, but the thread will complete naturally
-                    del self._scheduled_tasks[conversation_uuid]
-                    return True
-            return False
-        except Exception as e:
-            self._log_error(f"cancelling morning brief for {conversation_uuid}", e)
-            return False
+        if not user_pref.is_complete():
+            return "Complete setup first! Type 'start'."
 
-    def schedule_recurring_brief(self, conversation_uuid: str, brief_generator: Callable[[str], str]) -> bool:
-        """
-        Schedule recurring daily morning briefs
+        return self.generate_morning_brief(user_pref)
 
-        Args:
-            conversation_uuid: The unique conversation identifier
-            brief_generator: Function that generates brief content
+    def trigger_manual_brief(self,
+                             user_uuid: str,
+                             conversation_uuid: str = None) -> str:
+        """Manually trigger a morning brief for testing"""
+        user_pref = self.preferences_manager.get_or_create_user(user_uuid)
+        print("user pref: ", user_pref)
 
-        Returns:
-            True if scheduled successfully, False otherwise
-        """
-        try:
-            task_thread = threading.Thread(
-                target=self._recurring_brief_task, args=(conversation_uuid, brief_generator), daemon=True
-            )
+        if not user_pref.is_complete():
+            return "Please complete your setup first!"
 
-            with self._lock:
-                self._scheduled_tasks[f"{conversation_uuid}_recurring"] = task_thread
+        # Generate and store the brief
+        brief = self.generate_morning_brief(user_pref)
+        self._store_brief_for_user(user_uuid, brief)
+        self._mark_sent_today(user_uuid)
 
-            task_thread.start()
-            return True
+        # Brief generated
 
-        except Exception as e:
-            self._log_error(f"scheduling recurring brief for {conversation_uuid}", e)
-            return False
-
-    def schedule_reminder(self, conversation_uuid: str, reminder_time: datetime, reminder_text: str) -> bool:
-        """
-        Schedule a one-time reminder
-
-        Args:
-            conversation_uuid: The unique conversation identifier
-            reminder_time: When to send the reminder
-            reminder_text: The reminder message
-
-        Returns:
-            True if scheduled successfully, False otherwise
-        """
-        try:
-            if reminder_time <= datetime.now():
-                return False
-
-            task_id = f"{conversation_uuid}_reminder_{int(reminder_time.timestamp())}"
-            task_thread = threading.Thread(
-                target=self._scheduled_reminder_task,
-                args=(conversation_uuid, reminder_time, reminder_text),
-                daemon=True,
-            )
-
-            with self._lock:
-                self._scheduled_tasks[task_id] = task_thread
-
-            task_thread.start()
-            return True
-
-        except Exception as e:
-            self._log_error(f"scheduling reminder for {conversation_uuid}", e)
-            return False
-
-    def get_active_schedules(self) -> List[str]:
-        """
-        Get list of active scheduled tasks
-
-        Returns:
-            List of conversation UUIDs with active schedules
-        """
-        with self._lock:
-            return list(self._scheduled_tasks.keys())
-
-    def cancel_all_schedules(self):
-        """Cancel all scheduled tasks"""
-        with self._lock:
-            self._running = False
-            self._scheduled_tasks.clear()
-
-    def is_scheduled(self, conversation_uuid: str) -> bool:
-        """
-        Check if user has an active schedule
-
-        Args:
-            conversation_uuid: The unique conversation identifier
-
-        Returns:
-            True if user has active schedules, False otherwise
-        """
-        with self._lock:
-            return any(conversation_uuid in task_id for task_id in self._scheduled_tasks.keys())
-
-    def _calculate_next_execution_time(self, brief_time: time) -> datetime:
-        """
-        Calculate the next execution time for a brief
-
-        Args:
-            brief_time: The preferred time for the brief
-
-        Returns:
-            Next execution datetime
-        """
-        now = datetime.now()
-        today_execution = now.replace(hour=brief_time.hour, minute=brief_time.minute, second=0, microsecond=0)
-
-        if today_execution <= now:
-            # Schedule for tomorrow if today's time has passed
-            return today_execution + timedelta(days=1)
+        # Send notification if conversation UUID is provided
+        if conversation_uuid:
+            return self._send_notification_and_get_result(
+                conversation_uuid, brief, user_uuid)
         else:
-            # Schedule for today if the time hasn't passed yet
-            return today_execution
+            # No conversation UUID
+            return "Brief generated! Type 'morning' to view."
 
-    def _scheduled_morning_brief_task(self, conversation_uuid: str, execution_time: datetime):
-        """
-        Execute a scheduled morning brief task
+    def generate_morning_brief(self, user_pref: UserPreferences) -> str:
+        """Generate a complete morning brief for a user"""
+        greeting = self._get_greeting()
+        weather_summary = self._get_weather_summary(user_pref)
+        news_summary = self._get_news_summary(user_pref)
 
-        Args:
-            conversation_uuid: The unique conversation identifier
-            execution_time: When to execute the task
-        """
-        # Wait until execution time
-        while self._running and datetime.now() < execution_time:
-            time.sleep(60)  # Check every minute
+        return self._format_morning_brief(greeting, user_pref.location,
+                                          weather_summary, news_summary)
 
-        if not self._running:
-            return
+    def _run_scheduler(self):
+        """Main scheduler loop"""
+        # Scheduler started
 
-        try:
-            # Generate and send morning brief
-            brief_content = self._generate_morning_brief(conversation_uuid)
-            if brief_content:
-                self.notification_service.send_morning_brief(conversation_uuid, brief_content)
-
-                # Store the brief
-                self.storage.store_morning_brief(conversation_uuid, brief_content)
-
-        except Exception as e:
-            self._log_error(f"executing morning brief task for {conversation_uuid}", e)
-        finally:
-            # Clean up from active tasks
-            with self._lock:
-                if conversation_uuid in self._scheduled_tasks:
-                    del self._scheduled_tasks[conversation_uuid]
-
-    def _recurring_brief_task(self, conversation_uuid: str, brief_generator: Callable[[str], str]):
-        """
-        Execute recurring morning brief task
-
-        Args:
-            conversation_uuid: The unique conversation identifier
-            brief_generator: Function to generate brief content
-        """
-        while self._running:
+        while self.running:
             try:
-                user_prefs = UserPreferences(conversation_uuid)
-
-                # Check if notifications are still enabled
-                if not user_prefs.get_notifications_enabled():
-                    break
-
-                # Get current time and preferred brief time
-                brief_time = user_prefs.get_brief_time()
-                next_execution = self._calculate_next_execution_time(brief_time)
-
-                # Wait until execution time
-                while self._running and datetime.now() < next_execution:
-                    time.sleep(60)  # Check every minute
-
-                if not self._running:
-                    break
-
-                # Generate and send brief
-                brief_content = brief_generator(conversation_uuid)
-                if brief_content:
-                    self.notification_service.send_morning_brief(conversation_uuid, brief_content)
-                    self.storage.store_morning_brief(conversation_uuid, brief_content)
-
-                # Wait a bit to avoid duplicate sends
-                time.sleep(120)
-
+                self._check_and_send_briefs()
+                time.sleep(self.CHECK_INTERVAL)
             except Exception as e:
-                self._log_error(f"recurring brief task for {conversation_uuid}", e)
-                break
+                self._log_scheduler_error(e)
+                time.sleep(self.CHECK_INTERVAL)
 
-        # Clean up from active tasks
-        with self._lock:
-            task_id = f"{conversation_uuid}_recurring"
-            if task_id in self._scheduled_tasks:
-                del self._scheduled_tasks[task_id]
+    def _check_and_send_briefs(self):
+        """Check for users who need their morning brief"""
+        current_time = datetime.now()
+        current_time_obj = datetime_time(current_time.hour,
+                                         current_time.minute)
 
-    def _scheduled_reminder_task(self, conversation_uuid: str, reminder_time: datetime, reminder_text: str):
-        """
-        Execute a scheduled reminder task
+        users = self.preferences_manager.get_users_by_wake_time(
+            current_time_obj)
 
-        Args:
-            conversation_uuid: The unique conversation identifier
-            reminder_time: When to send the reminder
-            reminder_text: The reminder message
-        """
-        # Wait until reminder time
-        while self._running and datetime.now() < reminder_time:
-            time.sleep(60)  # Check every minute
+        # Check users
 
-        if not self._running:
-            return
+        for user_pref in users:
+            if not self._already_sent_today(user_pref.user_uuid):
+                self._generate_and_send_brief(user_pref)
 
+    def _generate_and_send_brief(self, user_pref: UserPreferences):
+        """Generate and send brief for a user"""
+        brief = self.generate_morning_brief(user_pref)
+        self._store_brief_for_user(user_pref.user_uuid, brief)
+        self._mark_sent_today(user_pref.user_uuid)
+        print("uuid: ", user_pref.conversation_uuid)
+
+        # Send notification if conversation UUID is available
+        if hasattr(user_pref,
+                   'conversation_uuid') and user_pref.conversation_uuid:
+            self._send_notification(user_pref.conversation_uuid, brief,
+                                    user_pref.user_uuid)
+
+    def _get_greeting(self) -> str:
+        """Get time-appropriate greeting"""
+        hour = datetime.now().hour
+
+        if hour < 12:
+            return "☀️ **Morning!**"
+        elif hour < 17:
+            return "🌤️ **Afternoon!**"
+        else:
+            return "🌅 **Evening!**"
+
+    def _get_weather_summary(self, user_pref: UserPreferences) -> str:
+        """Get weather summary for user's location"""
+        if user_pref.location:
+            return self.weather_service.get_weather_summary_openai(
+                user_pref.location)
+        return "Weather unavailable"
+
+    def _get_news_summary(self, user_pref: UserPreferences) -> str:
+        """Get news summary for user's interests"""
+        if user_pref.news_interests and user_pref.location:
+            return self.news_service.get_news_summary_openai(
+                user_pref.news_interests, user_pref.location)
+        return "No news"
+
+    def _format_morning_brief(self, greeting: str, location: str, weather: str,
+                              news: str) -> str:
+        """Format the complete morning brief"""
+        return (f"{greeting} 📍 {location}\n\n"
+                f"{weather}\n\n"
+                f"{news}\n\n"
+                "Have a great day! 🌟")
+
+    def _store_brief_for_user(self, user_uuid: str, brief: str):
+        """Store the morning brief for retrieval by the bot"""
         try:
-            # Send reminder
-            self.notification_service.send_reminder(conversation_uuid, reminder_text)
-
+            file_path = self._get_user_brief_path(user_uuid)
+            brief_data = {
+                'user_uuid': user_uuid,
+                'brief': brief,
+                'timestamp': datetime.now().isoformat()
+            }
+            self.storage.save(file_path, brief_data)
         except Exception as e:
-            self._log_error(f"executing reminder task for {conversation_uuid}", e)
-        finally:
-            # Clean up from active tasks
-            task_id = f"{conversation_uuid}_reminder_{int(reminder_time.timestamp())}"
-            with self._lock:
-                if task_id in self._scheduled_tasks:
-                    del self._scheduled_tasks[task_id]
+            print(f"Error storing brief for user {user_uuid}: {e}")
 
-    def _generate_morning_brief(self, conversation_uuid: str) -> Optional[str]:
-        """
-        Generate morning brief content for a user
-
-        Args:
-            conversation_uuid: The unique conversation identifier
-
-        Returns:
-            Brief content string or None if generation failed
-        """
+    def _is_today(self, timestamp_str: str) -> bool:
+        """Check if timestamp is from today"""
         try:
-            user_prefs = UserPreferences(conversation_uuid)
+            brief_date = datetime.fromisoformat(timestamp_str).date()
+            return brief_date == datetime.now().date()
+        except:
+            return False
 
-            # Get user preferences
-            location = user_prefs.get_weather_location()
-            categories = user_prefs.get_news_categories()
-            sections = user_prefs.get_brief_sections()
+    def _already_sent_today(self, user_uuid: str) -> bool:
+        """Check if brief was already sent today"""
+        today = datetime.now().strftime("%Y-%m-%d")
+        return self.sent_today.get(user_uuid) == today
 
-            brief_parts = []
-            brief_parts.append("# 🌅 Good Morning!")
-            brief_parts.append(f"Here's your personalized brief for {datetime.now().strftime('%A, %B %d, %Y')}:")
+    def _mark_sent_today(self, user_uuid: str):
+        """Mark that brief was sent today"""
+        today = datetime.now().strftime("%Y-%m-%d")
+        self.sent_today[user_uuid] = today
 
-            # Add weather section if enabled and location is set
-            if sections.get("weather", True) and location:
-                from ..services.weather_service import WeatherService
+    def _send_notification(self, conversation_uuid: str, brief: str,
+                           user_uuid: str):
+        """Send notification to user"""
+        self.notification_service.send_morning_brief(conversation_uuid, brief)
 
-                weather_service = WeatherService()
-                weather = weather_service.get_weather_forecast(location)
-                if weather:
-                    brief_parts.append(f"\n## 🌤️ Weather for {location}")
-                    brief_parts.append(weather)
+    def _send_notification_and_get_result(self, conversation_uuid: str,
+                                          brief: str, user_uuid: str) -> str:
+        """Send notification and return result message"""
+        if self.notification_service.send_morning_brief(
+                conversation_uuid, brief):
+            return "Brief sent!"
+        else:
+            return "Brief saved. Type 'morning' to view."
 
-            # Add news section if enabled
-            if sections.get("news", True):
-                from ..services.news_service import NewsService
+    def _log_startup(self):
+        """Log scheduler startup"""
+        pass
 
-                news_service = NewsService()
-                news = news_service.get_news_headlines(categories)
-                if news:
-                    brief_parts.append("\n## 📰 News Headlines")
-                    brief_parts.append(news)
-
-            # Add motivational quote if enabled
-            if sections.get("motivational_quote", False):
-                brief_parts.append("\n## ✨ Daily Inspiration")
-                brief_parts.append('_"The way to get started is to quit talking and begin doing."_ - Walt Disney')
-
-            return "\n".join(brief_parts)
-
-        except Exception as e:
-            self._log_error(f"generating morning brief for {conversation_uuid}", e)
-            return None
-
-    def _log_error(self, action: str, error: Exception):
-        """Log scheduler errors"""
+    def _log_scheduler_error(self, error: Exception):
         pass

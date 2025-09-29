@@ -1,337 +1,193 @@
-from typing import Dict, Any, Optional, List
-import bubbletea_chat as bt
-from core.user_preferences import UserPreferences
-from services.weather_service import WeatherService
-from services.news_service import NewsService
-from storage.storage_adapter import StorageAdapter
+import re
+from typing import List, Optional
+from core.user_preferences import UserPreferencesManager, OnboardingState
+from bubbletea_chat.components import Pill, Pills, Text, Markdown
 
 
 class OnboardingManager:
-    """Manages user onboarding flow and preference collection"""
+    def __init__(self, preferences_manager: UserPreferencesManager):
+        self.preferences_manager = preferences_manager
 
-    def __init__(self, conversation_uuid: str):
-        """Initialize onboarding manager
-
-        Args:
-            conversation_uuid: Unique identifier for the user conversation
-        """
-        self.conversation_uuid = conversation_uuid
-        self.user_prefs = UserPreferences(conversation_uuid)
-        self.weather_service = WeatherService()
-        self.news_service = NewsService()
-        self.storage = StorageAdapter()
-
-    def is_user_onboarded(self) -> bool:
-        """
-        Check if user has completed onboarding
-
-        Returns:
-            True if user has completed onboarding, False otherwise
-        """
-        # Check if essential preferences are set
-        location = self.user_prefs.get_weather_location()
-        timezone = self.user_prefs.get_timezone()
-
-        # User is considered onboarded if they have set their location
-        # (timezone has a default value)
-        return location is not None
-
-    def start_onboarding(self):
-        """
-        Start the onboarding flow
-
-        Returns:
-            BubbleTea component for onboarding introduction
-        """
-        return bt.Markdown(
-            """# Welcome to Morning Brief Bot! 🌅
-
-I'm here to help you start each day with personalized morning briefs containing:
-
-✅ **Weather updates** for your location
-✅ **News headlines** tailored to your interests
-✅ **Personalized insights** to kickstart your day
-
-Let's get you set up with a quick configuration process."""
-        )
-
-    def get_location_setup(self):
-        """
-        Get location setup component
-
-        Returns:
-            BubbleTea component for location input
-        """
-        return bt.Text(
-            "What's your location? (e.g., 'New York, NY' or 'London, UK')",
-            placeholder="Enter your city and country/state...",
-            multiline=False,
-        )
-
-    def process_location(self, location: str):
-        """
-        Process user's location input
-
-        Args:
-            location: User's location string
-
-        Returns:
-            BubbleTea component with confirmation or error
-        """
-        if not location or len(location.strip()) < 2:
-            return bt.Markdown("❌ Please provide a valid location.")
-
-        # Store the location
-        success = self.user_prefs.set_weather_location(location.strip())
-
-        if success:
-            return bt.Markdown(f"✅ Great! I've set your location to **{location}**.")
-        else:
-            return bt.Markdown("❌ There was an issue saving your location. Please try again.")
-
-    def get_timezone_setup(self):
-        """
-        Get timezone setup component
-
-        Returns:
-            BubbleTea component for timezone selection
-        """
-        common_timezones = [
-            "UTC",
-            "America/New_York",
-            "America/Los_Angeles",
-            "America/Chicago",
-            "Europe/London",
-            "Europe/Paris",
-            "Asia/Tokyo",
-            "Asia/Shanghai",
-            "Australia/Sydney",
+        # Available news categories
+        self.news_categories = [
+            "technology", "business", "entertainment", "health",
+            "science", "sports", "politics", "world", "finance"
         ]
 
-        return bt.Pills("What's your timezone?", options=common_timezones, allow_multiple=False)
+    def get_onboarding_message(self, user_uuid: str, user_input: Optional[str] = None) -> list:
+        """Main onboarding flow handler"""
+        current_state = self.preferences_manager.get_current_onboarding_state(user_uuid)
 
-    def process_timezone(self, timezone: str):
-        """
-        Process user's timezone selection
+        # Handle user input based on current state
+        if user_input and current_state != OnboardingState.NOT_STARTED:
+            return self._process_user_input(user_uuid, current_state, user_input)
 
-        Args:
-            timezone: Selected timezone string
+        # Return appropriate message for current state
+        return self._get_state_message(user_uuid, current_state)
 
-        Returns:
-            BubbleTea component with confirmation
-        """
-        success = self.user_prefs.set_timezone(timezone)
+    def _get_state_message(self, user_uuid: str, state: OnboardingState) -> list:
+        """Get the appropriate message for the current onboarding state"""
 
-        if success:
-            return bt.Markdown(f"✅ Timezone set to **{timezone}**.")
-        else:
-            return bt.Markdown("❌ There was an issue saving your timezone. Please try again.")
+        if state == OnboardingState.NOT_STARTED:
+            self.preferences_manager.advance_onboarding_state(user_uuid)
+            return [
+                Markdown(
+                    "🌅 **Morning Brief Bot**\n\n"
+                    "Daily weather & news at your wake time.\n\n"
+                    "**Your city, country?** (e.g., 'London, UK'):"
+                )
+            ]
 
-    def get_news_preferences_setup(self):
-        """
-        Get news preferences setup component
+        elif state == OnboardingState.ASKING_LOCATION:
+            return [Text("City, country? (e.g., 'Paris, France')")]
 
-        Returns:
-            BubbleTea component for news category selection
-        """
-        news_categories = ["general", "technology", "business", "science", "health", "sports", "entertainment"]
+        elif state == OnboardingState.ASKING_INTERESTS:
+            return [
+                Text("Pick news topics:"),
+                Pills(pills=[Pill(cat.title(), f"interest:{cat}") for cat in self.news_categories]),
+                Text("Click topics, then type 'done'")
+            ]
 
-        return bt.Pills(
-            "Which news categories interest you? (Select multiple)", options=news_categories, allow_multiple=True
-        )
+        elif state == OnboardingState.ASKING_WAKE_TIME:
+            return [
+                Text("Wake time? (24-hour format like '07:00'):")
+            ]
 
-    def process_news_preferences(self, categories: List[str]):
-        """
-        Process user's news category preferences
+        elif state == OnboardingState.COMPLETED:
+            user_prefs = self.preferences_manager.get_or_create_user(user_uuid)
 
-        Args:
-            categories: List of selected news categories
+            return [
+                Markdown(
+                    "✅ **Setup done!**\n"
+                    f"📍 {user_prefs.location}\n"
+                    f"📰 {', '.join(user_prefs.news_interests)}\n"
+                    f"⏰ {user_prefs.wake_time}"
+                ),
+                Pills(pills=[
+                    Pill("Update", "action:update"),
+                    Pill("Preview", "action:preview"),
+                    Pill("Help", "action:help")
+                ])
+            ]
 
-        Returns:
-            BubbleTea component with confirmation
-        """
-        if not categories:
-            categories = ["general", "technology"]  # Default categories
+    def _process_user_input(self, user_uuid: str, state: OnboardingState, user_input: str) -> list:
+        """Process user input based on current state"""
 
-        success = self.user_prefs.set_news_categories(categories)
+        if state == OnboardingState.ASKING_LOCATION:
+            return self._process_location(user_uuid, user_input)
 
-        if success:
-            category_list = ", ".join(categories)
-            return bt.Markdown(f"✅ News categories set to: **{category_list}**.")
-        else:
-            return bt.Markdown("❌ There was an issue saving your news preferences.")
+        elif state == OnboardingState.ASKING_INTERESTS:
+            return self._process_interests(user_uuid, user_input)
 
-    def get_schedule_setup(self):
-        """
-        Get schedule setup component
+        elif state == OnboardingState.ASKING_WAKE_TIME:
+            return self._process_wake_time(user_uuid, user_input)
 
-        Returns:
-            BubbleTea component for schedule preferences
-        """
-        time_options = ["06:00", "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00"]
+        elif state == OnboardingState.COMPLETED:
+            return self._handle_completed_state_input(user_uuid, user_input)
 
-        return bt.Pills(
-            "What time would you like to receive your morning brief?", options=time_options, allow_multiple=False
-        )
+        return [Text("Error. Type 'start' to restart.")]
 
-    def process_schedule(self, brief_time: str):
-        """
-        Process user's schedule preference
+    def _process_location(self, user_uuid: str, location: str) -> list:
+        """Process and validate location input"""
+        location = location.strip()
 
-        Args:
-            brief_time: Selected time string
+        # Basic validation - check if it looks like "City, Country"
+        if ',' not in location or len(location) < 5:
+            return [
+                Text("Format: 'City, Country'")
+            ]
 
-        Returns:
-            BubbleTea component with confirmation
-        """
-        success = self.user_prefs.set_brief_time(brief_time)
+        # Save location and advance state
+        self.preferences_manager.update_user_preferences(user_uuid, location=location)
+        self.preferences_manager.advance_onboarding_state(user_uuid)
 
-        if success:
-            return bt.Markdown(f"✅ Morning brief scheduled for **{brief_time}** daily.")
-        else:
-            return bt.Markdown("❌ There was an issue saving your schedule preference.")
+        # Return next state message
+        return self._get_state_message(user_uuid, OnboardingState.ASKING_INTERESTS)
 
-    def get_brief_sections_setup(self):
-        """
-        Get brief sections setup component
+    def process_pill_selection(self, user_uuid: str, selected_pills: List[str]) -> list:
+        """Process pill selections for interests"""
+        if not selected_pills:
+            return [Text("Pick at least one topic.")]
 
-        Returns:
-            BubbleTea component for section selection
-        """
-        section_options = ["weather", "news", "calendar", "motivational_quote"]
+        # Save interests and advance state
+        self.preferences_manager.update_user_preferences(user_uuid, news_interests=selected_pills)
+        self.preferences_manager.advance_onboarding_state(user_uuid)
 
-        return bt.Pills(
-            "Which sections would you like in your morning brief?", options=section_options, allow_multiple=True
-        )
+        # Return next state message
+        return self._get_state_message(user_uuid, OnboardingState.ASKING_WAKE_TIME)
 
-    def process_brief_sections(self, sections: List[str]):
-        """
-        Process user's brief section preferences
-
-        Args:
-            sections: List of selected sections
-
-        Returns:
-            BubbleTea component with confirmation
-        """
-        if not sections:
-            sections = ["weather", "news"]  # Default sections
-
-        # Convert list to dict format expected by user preferences
-        sections_dict = {section: True for section in sections}
-        # Explicitly set unselected sections to False
-        all_sections = ["weather", "news", "calendar", "motivational_quote"]
-        for section in all_sections:
-            if section not in sections:
-                sections_dict[section] = False
-
-        success = self.user_prefs.set_brief_sections(sections_dict)
-
-        if success:
-            section_list = ", ".join(sections)
-            return bt.Markdown(f"✅ Brief sections set to: **{section_list}**.")
-        else:
-            return bt.Markdown("❌ There was an issue saving your section preferences.")
-
-    def complete_onboarding(self):
-        """
-        Complete the onboarding process
-
-        Returns:
-            BubbleTea component with completion message
-        """
-        # Enable notifications by default
-        self.user_prefs.set_notifications_enabled(True)
-
-        # Get user's preferences for summary
-        location = self.user_prefs.get_weather_location()
-        timezone = self.user_prefs.get_timezone()
-        categories = self.user_prefs.get_news_categories()
-        brief_time = self.user_prefs.get_brief_time().strftime("%H:%M")
-
-        return bt.Markdown(
-            f"""# 🎉 Setup Complete!
-
-Your Morning Brief Bot is now configured with:
-
-📍 **Location:** {location}
-🕐 **Timezone:** {timezone}
-📰 **News Categories:** {', '.join(categories)}
-⏰ **Brief Time:** {brief_time}
-
-You'll start receiving personalized morning briefs according to your preferences. You can always update your settings by typing "settings" or "preferences".
-
-Type "brief" to get your first morning brief right now, or "help" to see all available commands!"""
-        )
-
-    def get_onboarding_status(self) -> Dict[str, Any]:
-        """
-        Get current onboarding status and progress
-
-        Returns:
-            Dictionary containing onboarding progress information
-        """
-        preferences = self.user_prefs.get_all_preferences()
-
-        status = {
-            "is_complete": self.is_user_onboarded(),
-            "completed_steps": [],
-            "remaining_steps": [],
-            "preferences": preferences,
-        }
-
-        # Define onboarding steps
-        steps = {
-            "location": preferences.get("weather_location") is not None,
-            "timezone": preferences.get("timezone") != "UTC",
-            "news_categories": len(preferences.get("news_categories", [])) > 0,
-            "brief_time": preferences.get("brief_time") != "08:00",
-            "brief_sections": any(preferences.get("brief_sections", {}).values()),
-        }
-
-        for step, completed in steps.items():
-            if completed:
-                status["completed_steps"].append(step)
+    def _process_interests(self, user_uuid: str, interests_input: str) -> list:
+        """Process and validate interests input"""
+        # Check if user typed 'done' after selecting pills
+        if interests_input.lower() == 'done':
+            # Get stored interests from preferences
+            user_prefs = self.preferences_manager.get_or_create_user(user_uuid)
+            if user_prefs.news_interests:
+                self.preferences_manager.advance_onboarding_state(user_uuid)
+                return self._get_state_message(user_uuid, OnboardingState.ASKING_WAKE_TIME)
             else:
-                status["remaining_steps"].append(step)
+                return [Text("Pick at least one topic first.")]
 
-        return status
+        # If they're typing interests manually (fallback)
+        interests = [i.strip().lower() for i in interests_input.split(',')]
 
-    def reset_onboarding(self) -> bool:
-        """
-        Reset onboarding progress (for testing or re-setup)
+        # Validate interests
+        valid_interests = []
+        invalid_interests = []
 
-        Returns:
-            True if reset successfully, False otherwise
-        """
-        return self.user_prefs.reset_preferences()
+        for interest in interests:
+            if interest in self.news_categories:
+                valid_interests.append(interest)
+            else:
+                invalid_interests.append(interest)
 
-    def update_preference_during_onboarding(self, preference_key: str, value: Any):
-        """
-        Update a specific preference during onboarding
+        if not valid_interests:
+            # Show pills again
+            return self._get_state_message(user_uuid, OnboardingState.ASKING_INTERESTS)
 
-        Args:
-            preference_key: The preference to update
-            value: The new value
+        # Save interests and advance state
+        self.preferences_manager.update_user_preferences(user_uuid, news_interests=valid_interests)
+        self.preferences_manager.advance_onboarding_state(user_uuid)
 
-        Returns:
-            BubbleTea component with update confirmation
-        """
-        success = False
+        # Return next state message
+        return self._get_state_message(user_uuid, OnboardingState.ASKING_WAKE_TIME)
 
-        # Route to appropriate setter method
-        setter_methods = {
-            "location": self.user_prefs.set_weather_location,
-            "timezone": self.user_prefs.set_timezone,
-            "news_categories": self.user_prefs.set_news_categories,
-            "brief_time": self.user_prefs.set_brief_time,
-            "brief_sections": self.user_prefs.set_brief_sections,
-        }
+    def _process_wake_time(self, user_uuid: str, time_input: str) -> list:
+        """Process and validate wake time input"""
+        time_input = time_input.strip()
 
-        if preference_key in setter_methods:
-            success = setter_methods[preference_key](value)
+        # Validate time format (HH:MM)
+        time_pattern = re.compile(r'^([0-1]?[0-9]|2[0-3]):([0-5][0-9])$')
+        match = time_pattern.match(time_input)
 
-        if success:
-            return bt.Markdown(f"✅ Updated {preference_key} successfully.")
+        if not match:
+            return [Text("Use 24-hour format (e.g., '07:00' or '19:30')")]
+
+        # Normalize time format (ensure 2 digits for hour)
+        hour, minute = match.groups()
+        normalized_time = f"{hour.zfill(2)}:{minute}"
+
+        # Save wake time and complete onboarding
+        self.preferences_manager.update_user_preferences(user_uuid, wake_time=normalized_time)
+        self.preferences_manager.advance_onboarding_state(user_uuid)
+
+        # Return completion message
+        return self._get_state_message(user_uuid, OnboardingState.COMPLETED)
+
+    def _handle_completed_state_input(self, user_uuid: str, user_input: str) -> list:
+        """Handle commands after onboarding is complete"""
+        command = user_input.strip().lower()
+
+        if command == 'update' or command == 'restart':
+            self.preferences_manager.reset_user_onboarding(user_uuid)
+            return self._get_state_message(user_uuid, OnboardingState.NOT_STARTED)
+
+        elif command == 'preview':
+            return [Text("Use 'preview' command in main chat.")]
+
         else:
-            return bt.Markdown(f"❌ Failed to update {preference_key}. Please try again.")
+            return [Text("Type 'help' for commands.")]
+
+    def is_user_onboarded(self, user_uuid: str) -> bool:
+        """Check if user has completed onboarding"""
+        return self.preferences_manager.is_user_onboarded(user_uuid)
