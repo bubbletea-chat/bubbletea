@@ -4,7 +4,7 @@ Movie Guessing Game Bot
 import os
 import json
 import openai
-from bubbletea_chat import bt
+import bubbletea_chat as bt
 from bubbletea_chat.components import Pill, Pills, Text
 from dotenv import load_dotenv
 
