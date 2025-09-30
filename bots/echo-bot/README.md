@@ -6,6 +6,9 @@
 A simple demonstration bot that echoes back whatever you type. Perfect for testing BubbleTea integration, learning bot development basics, and serving as a minimal template for building more complex bots.
 
 ### Live bot
+
+![Echo Bot Demo](./echo-bot-demo.gif)
+
 🔗 **Try it now:** [Echo Bot on BubbleTea](https://bubbletea.chat/bot/echo-bot)
 
 ### Example conversations
@@ -78,7 +81,7 @@ A simple demonstration bot that echoes back whatever you type. Perfect for testi
 
 🌐 **Platform:** Google Cloud Platform (GCP)
 
-📍 **Region:** us-central1
+📍 **Region:** us-east1
 
 🔗 **Live URL:** Available on [BubbleTea Chat](https://bubbletea.chat/bot/echo-bot)
 

@@ -1,110 +1,216 @@
-# ChatGPT Thread Bot
+# 🧠 GPT Assistant Bot
 
-## What you'll get
+A simple yet powerful OpenAI GPT-4 assistant bot built for the BubbleTea Chat platform. Experience threaded conversations with ChatGPT in a seamless chat interface!
 
-### Description
-A sophisticated AI chatbot powered by OpenAI's GPT at provides intelligent conversation with threaded messaging support. Perfect for customer support, brainstorming sessions, and interactive AI assistance with conversation history management.
+## 🎬 Live Demo
 
-### Live bot
-🔗 **Try it now:** [ChatGPT Thread Bot on BubbleTea](https://bubbletea.chat/bot/chatgpt-wrapper)
+![GPT Assistant Bot Demo](./openai-bot-demo.gif)
 
-### Example conversations
-- [View sample conversation 1](https://bubbletea.chat/shared/wrhjUAYmHryp3XFZFauSYyCjypq4n8v3egC9RmvxtD8)
-- [View sample conversation 2](https://bubbletea.chat/shared/wrhjUAYmHryp3XFZFauSYyCjypq4n8v3egC9RmvxtD8)
+**Try it now:** [https://bubbletea.chat/gpt-assistant/chat](https://bubbletea.chat/gpt-assistant/chat)
 
-### Features
-- **Natural Language Conversations** - Powered by GPT-4 for intelligent responses
-- **Threaded Messaging** - Maintains conversation context across multiple messages
-- **Async Processing** - Non-blocking message handling for better performance
-- **Context Retention** - Remembers previous messages within a thread
-- **Multi-turn Dialog** - Ideal for extended conversations and problem-solving
-- **Timeout Protection** - 120-second timeout for long-running requests
-- **Rich Markdown Support** - Formatted responses with markdown rendering
-- **Session Management** - Per-user conversation threads for personalized experiences
+**Example Chat:** [View a sample conversation](https://bubbletea.chat/shared/wrhjUAYmHryp3XFZFauSYyCjypq4n8v3egC9RmvxtD8)
 
-## How to build it
+## 🌟 Features
 
-### Code review
+- **GPT-4 Integration**: Powered by OpenAI's latest GPT-4 model for intelligent responses
+- **Threaded Conversations**: Maintains conversation context across multiple exchanges
+- **Async Processing**: Non-blocking message handling for optimal performance
+- **Rich Markdown Support**: Formatted responses with markdown rendering
+- **Session Management**: Per-user conversation threads for personalized experiences
+- **Error Handling**: Robust error management with graceful fallbacks
+- **Simple Setup**: Minimal configuration required to get started
+- **Open Source**: Fully open-source codebase for transparency and customization
 
-1. **Main Components:**
-   - `process_message_async()` - Handles async message processing with the OpenAI API
-   - `gpt_assistant()` - Main chatbot handler decorated with @bt.chatbot
-   - `get_config()` - Bot configuration including metadata and display settings
+## 🎯 How It Works
 
-2. **Key Technologies:**
-   - BubbleTea Chat SDK for bot framework
-   - OpenAI API for GPT-4 integration
-   - Async/await for non-blocking operations
-   - Thread management for conversation continuity
-   - httpx for async HTTP requests
+### Conversation Flow
+1. **Message Input**: User sends a message through BubbleTea Chat
+2. **Context Retrieval**: Bot retrieves conversation thread for context
+3. **GPT Processing**: Message is processed by OpenAI GPT-4 with full context
+4. **Response Generation**: AI-generated response is formatted and sent back
+5. **Thread Update**: Conversation thread is updated with new exchange
 
-3. **Architecture Flow:**
-   - User sends message → Bot receives via webhook
-   - Creates/retrieves thread ID for conversation context
-   - Async task processes message with OpenAI API
-   - Response formatted as Markdown component
-   - Sent back to BubbleTea platform via API
+### Key Components
+- **LLM Integration**: Uses BubbleTea's LLM wrapper for OpenAI
+- **Thread Management**: Maintains conversation continuity
+- **Async API Calls**: Non-blocking HTTP requests to BubbleTea platform
+- **Error Recovery**: Handles API failures gracefully
 
-4. **Environment Variables:**
-   ```
-   BUBBLETEA_API_KEY=your_bubbletea_api_key
-   OPENAI_API_KEY=your_openai_api_key
-   ```
+## 🛠️ Installation
 
-### Deployment
+### Prerequisites
+- Python 3.8+
+- BubbleTea Chat SDK
+- OpenAI API access
 
-1. **Prerequisites:**
-   - Python 3.8+
-   - Google Cloud Platform account
-   - BubbleTea API key
-   - OpenAI API key
+### Setup
 
-2. **Installation:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+1. **Install Dependencies**:
+```bash
+pip install -r requirements.txt
+```
 
-3. **Local Testing:**
-   ```bash
-   # Set environment variables
-   export OPENAI_API_KEY="your_key"
-   export BUBBLETEA_API_KEY="your_key"
+2. **Environment Configuration**:
+Create a new `.env` file by copying the `.env.example` template:
+```bash
+cp .env.example .env
+```
 
-   # Run the bot
-   python bot.py
-   ```
+Then edit the `.env` file and update the variables with your actual API keys:
+```bash
+# Open .env in your editor and replace the placeholder values
+nano .env  # or use your preferred editor
+```
 
-4. **Deploy to Google Cloud Run:**
+3. **Required Environment Variables**:
+```bash
+OPENAI_API_KEY=your_openai_api_key_here
+BUBBLETEA_API_KEY=your_bubbletea_api_key_here
+```
 
-   Create a `Dockerfile`:
-   ```dockerfile
-   FROM python:3.9-slim
-   WORKDIR /app
-   COPY requirements.txt .
-   RUN pip install -r requirements.txt
-   COPY . .
-   CMD ["python", "bot.py"]
-   ```
+### Running the Bot
 
-   Deploy:
-   ```bash
-   # Build container
-   gcloud builds submit --tag gcr.io/YOUR_PROJECT/openai-bot
+```bash
+python bot.py
+```
 
-   # Deploy to Cloud Run
-   gcloud run deploy openai-bot \
-     --image gcr.io/YOUR_PROJECT/openai-bot \
-     --platform managed \
-     --region us-central1 \
-     --allow-unauthenticated \
-     --port 8080 \
-     --set-env-vars BUBBLETEA_API_KEY=$BUBBLETEA_API_KEY,OPENAI_API_KEY=$OPENAI_API_KEY
-   ```
+## 🔧 Configuration Options
 
-5. **Configuration:**
-   - Set environment variables in Cloud Run
-   - Update bot URL in BubbleTea dashboard with Cloud Run URL
-   - Configure CORS if needed
+### Environment Variables
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `OPENAI_API_KEY` | OpenAI API key for GPT access | - | ✅ Yes |
+| `BUBBLETEA_API_KEY` | BubbleTea platform API key | - | ✅ Yes |
+| `BUBBLETEA_API_URL` | BubbleTea backend URL | `https://backend.bubbletea.chat` | ❌ No |
+| `OPENAI_MODEL` | OpenAI model to use | `gpt-4` | ❌ No |
+| `OPENAI_MAX_TOKENS` | Maximum response tokens | `1000` | ❌ No |
+| `OPENAI_TEMPERATURE` | Response creativity (0-2) | `0.7` | ❌ No |
+
+### Model Configuration
+- **Default Model**: GPT-4 for best response quality
+- **Token Limit**: 1000 tokens per response (configurable)
+- **Temperature**: 0.7 for balanced creativity and accuracy
+- **Context Window**: Full conversation history maintained
+
+## 🏗️ Architecture
+
+## 📖 Code Walkthrough
+
+### 1. **Main Bot Handler** (`gpt_assistant()`)
+Located at `bot.py:47-69`, this is the entry point for all incoming messages:
+
+```python
+@bt.chatbot("chatgpt-assistant")
+def gpt_assistant(message: str, user_uuid: str = None, thread_id: str = None, conversation_uuid: str = None):
+```
+
+**Key responsibilities:**
+- Receives user messages from BubbleTea platform
+- Manages thread creation for new conversations
+- Launches async processing for non-blocking operation
+- Returns immediate acknowledgment to user
+
+### 2. **Thread Management**
+Ensures conversation continuity:
+
+```python
+if not thread_id:
+    thread_id = llm.create_thread(user_uuid)  # New conversation
+```
+
+- Creates new thread for first-time users
+- Maintains existing thread for returning users
+- Preserves conversation context across exchanges
+
+### 3. **Async Message Processing** (`process_message_async()`)
+Handles the actual AI interaction:
+
+```python
+async def process_message_async(message: str, conversation_uuid: str, thread_id: str = None):
+    llm = LLM(model="gpt-4", llm_provider="openai")
+    response = llm.get_assistant_response(thread_id, message)
+```
+
+**Processing steps:**
+1. Initialize GPT-4 model connection
+2. Send message with thread context to OpenAI
+3. Format response as Markdown component
+4. Post response back to BubbleTea API
+
+### 4. **Response Delivery**
+Sends AI response back to user:
+
+```python
+url = f"https://backend.bubbletea.chat/v1/developer/conversation/{conversation_uuid}/message"
+payload = {"sender": "agent", "content": content}
+
+async with httpx.AsyncClient() as client:
+    response_api = await client.post(url, json=payload, headers=headers)
+```
+
+- Uses httpx for async HTTP requests
+- Authenticates with BubbleTea API key
+- Handles errors gracefully without blocking
+
+### 5. **Bot Configuration**
+Defines bot metadata and behavior:
+
+```python
+@gpt_assistant.config
+def get_config():
+    return bt.BotConfig(
+        name="chatgpt-wrapper",
+        display_name="ChatGPT Thread Bot",
+        is_streaming=False,
+        # ... other configuration
+    )
+```
+
+**Configuration elements:**
+- Bot identification and display information
+- Streaming behavior settings
+- Welcome message for new users
+- Public visibility for discovery
+
+### 6. **Server Initialization**
+Starts the bot server:
+
+```python
+if __name__ == "__main__":
+    bt.run_server(gpt_assistant, port=5000, host="0.0.0.0")
+```
+
+- Binds to all network interfaces (0.0.0.0)
+- Runs on port 5000 by default
+- Handles incoming webhook requests from BubbleTea
+
+### Key Design Patterns
+
+1. **Async/Await Pattern**: Non-blocking message processing prevents timeout issues
+2. **Thread-based Context**: Maintains conversation history for coherent interactions
+3. **Component-based Responses**: Uses BubbleTea's component system for rich formatting
+4. **Error Resilience**: Graceful error handling ensures bot availability
+5. **Environment Configuration**: Secure API key management via environment variables
+
+## 🧪 Development
+
+### Local Testing
+```bash
+# Set up development environment
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set environment variables
+export OPENAI_API_KEY="your_key_here"
+export BUBBLETEA_API_KEY="your_key_here"
+
+# Run bot
+python bot.py
+```
 
 ## Deployed
 
@@ -112,12 +218,17 @@ A sophisticated AI chatbot powered by OpenAI's GPT at provides intelligent conve
 
 🌐 **Platform:** Google Cloud Platform (GCP)
 
-📍 **Region:** Configurable (default: us-central1)
+📍 **Region:** us-central1
 
-🔗 **Live URL:** Available on [BubbleTea Chat](https://bubbletea.chat/bot/chatgpt-wrapper)
+🔗 **Live URL:** Available on [BubbleTea Chat](https://bubbletea.chat/gpt-assistant/chat)
 
-🚀 **Port:** 8080 (Cloud Run default)
+🚀 **Port:** 8080
 
-## Support
-For BubbleTea SDK documentation: [docs.bubbletea.chat](https://bubbletea.chat/docs)
-For platform issues: [github.com/bubbletea-chat/bubbletea](https://github.com/bubbletea-chat/bubbletea)
+
+## 🆘 Support
+
+- **BubbleTea Documentation & Issues**: [github.com/bubbletea-chat/bubbletea](https://github.com/bubbletea-chat/bubbletea)
+
+---
+
+**Built with ❤️ for BubbleTea Chat**

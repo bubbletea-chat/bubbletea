@@ -3,13 +3,15 @@
 ## What you'll get
 
 ### Description
-A simple yet powerful AI assistant powered by Anthropic's Claude 3.5 Sonnet, offering intelligent conversations and helpful assistance across a wide range of topics. Perfect for quick questions, brainstorming, writing help, and coding assistance.
+A simple yet powerful AI assistant powered by Anthropic's Claude, offering intelligent conversations and helpful assistance across a wide range of topics. Perfect for quick questions, brainstorming, writing help, and coding assistance.
 
 ### Live bot
+
+![Claude Bot Demo](./claude-bot-demo.gif)
+
 🔗 **Try it now:** [Claude Bot on BubbleTea](https://bubbletea.chat/bot/claude-bot)
 
-### Example conversations
-- Coming soon - example conversation links will be added here
+**Example Chat:** [View a sample conversation](https://bubbletea.chat/shared/fnG3Nih-JsdZDbjf9Fg30nJ2Gei0K4DI83yUjrFydNE)
 
 ### Features
 - **Natural Language Conversations** - Powered by Claude 3.5 Sonnet for intelligent responses
@@ -45,7 +47,7 @@ A simple yet powerful AI assistant powered by Anthropic's Claude 3.5 Sonnet, off
 4. **Environment Variables:**
    ```
    ANTHROPIC_API_KEY=your_anthropic_api_key
-   BOT_URL=your_bot_url (optional, defaults to localhost:5000)
+   BOT_URL=your_bot_url (optional)
    ```
 
 ### Deployment
@@ -85,6 +87,7 @@ A simple yet powerful AI assistant powered by Anthropic's Claude 3.5 Sonnet, off
 🔗 **Live URL:** Available on [BubbleTea Chat](https://bubbletea.chat/bot/claude-simple)
 
 🚀 **Port:** 8080 (Cloud Run default)
+
 ## Support
 For Anthropic API documentation, visit [docs.anthropic.com](https://docs.anthropic.com)
 For BubbleTea platform issues: [github.com/bubbletea-chat/bubbletea](https://github.com/bubbletea-chat/bubbletea)
