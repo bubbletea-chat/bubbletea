@@ -1,5 +1,13 @@
 # BubbleTea Components Showcase Bot
 
+## Table of Contents
+- [Description](#description)
+- [Features](#features)
+- [Setup Instructions](#setup-instructions)
+- [Configuration](#configuration)
+- [Development](#development)
+- [Components Showcased](#components-showcased)
+
 ## Description
 An interactive demonstration bot that showcases all available UI components in the BubbleTea Chat platform. This bot serves as a live reference for developers to understand and test various UI components including Text, Markdown, Cards, Pills, Images, Videos, and more.
 

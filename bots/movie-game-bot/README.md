@@ -1,5 +1,13 @@
 # Movie Guessing Game Bot
 
+## Table of Contents
+- [Description](#description)
+- [Features](#features)
+- [Setup Instructions](#setup-instructions)
+- [Configuration](#configuration)
+- [Development](#development)
+- [How to Play](#how-to-play)
+
 ## Description
 An interactive movie guessing game bot built for the BubbleTea Chat platform. Challenge your movie knowledge with AI-generated questions featuring hilariously bad movie plot descriptions!
 

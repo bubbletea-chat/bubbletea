@@ -1,5 +1,12 @@
 # BubbleTea Developers Help Bot
 
+## Table of Contents
+- [Description](#description)
+- [Features](#features)
+- [Setup Instructions](#setup-instructions)
+- [Configuration](#configuration)
+- [Development](#development)
+
 ## Description
 An intelligent assistant that helps developers learn and use the BubbleTea SDK. Get instant answers to your SDK questions, see code examples, and learn best practices for building chatbots on the BubbleTea platform.
 

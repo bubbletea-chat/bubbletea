@@ -1,5 +1,15 @@
 # Morning Brief Bot
 
+## Table of Contents
+- [Description](#description)
+- [Features](#features)
+- [Setup Instructions](#setup-instructions)
+- [Configuration](#configuration)
+- [Commands](#commands)
+- [Data Persistence](#data-persistence)
+- [Development](#development)
+- [Example Output](#example-output)
+
 ## Description
 An intelligent morning briefing bot built for the BubbleTea Chat platform. Get personalized daily weather and news summaries delivered at your preferred wake-up time!
 

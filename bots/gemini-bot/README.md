@@ -1,5 +1,13 @@
 # Gemini Assistant Bot
 
+## Table of Contents
+- [Description](#description)
+- [Features](#features)
+- [Setup Instructions](#setup-instructions)
+- [Configuration](#configuration)
+- [Development](#development)
+- [Example Conversations](#example-conversations)
+
 ## Description
 An intelligent AI assistant powered by Google's Gemini models, providing advanced conversational capabilities, multimodal understanding, and comprehensive assistance across various domains. This bot leverages Gemini's state-of-the-art language understanding for natural, helpful interactions.
 

@@ -1,5 +1,11 @@
 # Echo Bot
 
+## Table of Contents
+- [What you'll get](#what-youll-get)
+- [How to build it](#how-to-build-it)
+- [Deployed](#deployed)
+- [Support](#support)
+
 ## What you'll get
 
 ### Description

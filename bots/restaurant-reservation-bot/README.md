@@ -1,5 +1,13 @@
 # Restaurant Reservation Bot
 
+## Table of Contents
+- [Description](#description)
+- [Features](#features)
+- [Setup Instructions](#setup-instructions)
+- [Configuration](#configuration)
+- [Development](#development)
+- [How It Works](#how-it-works)
+
 ## Description
 A sophisticated restaurant reservation system bot that handles table bookings, manages availability, and provides a seamless reservation experience. This bot offers an interactive flow for customers to book tables, modify reservations, and receive confirmations.
 

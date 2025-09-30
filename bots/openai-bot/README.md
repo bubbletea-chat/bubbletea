@@ -1,5 +1,15 @@
 # 🧠 GPT Assistant Bot
 
+## Table of Contents
+- [Description](#description)
+- [Live Demo](#live-demo)
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [Configuration](#configuration)
+- [Development](#development)
+- [How It Works](#how-it-works)
+
+## Description
 A simple yet powerful OpenAI GPT-4 assistant bot built for the BubbleTea Chat platform. Experience threaded conversations with ChatGPT in a seamless chat interface!
 
 ## 🎬 Live Demo

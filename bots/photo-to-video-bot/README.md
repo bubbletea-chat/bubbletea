@@ -1,5 +1,12 @@
 # Photo to Video Bot
 
+## Table of Contents
+- [Description](#description)
+- [Features](#features)
+- [Setup Instructions](#setup-instructions)
+- [Configuration](#configuration)
+- [Development](#development)
+
 ## Description
 An advanced multimedia bot that transforms collections of photos into dynamic video presentations. This bot allows users to upload multiple images and automatically generates professional-looking videos with transitions, effects, and optional background music.
 
