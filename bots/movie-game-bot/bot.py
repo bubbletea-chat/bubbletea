@@ -1,18 +1,22 @@
-"""Movie Guessing Game Bot"""
-
+"""
+Movie Guessing Game Bot
+"""
 import os
 import json
-from typing import Dict, List, Optional, Any
 import openai
-import bubbletea_chat as bt
+from bubbletea_chat import bt
 from bubbletea_chat.components import Pill, Pills, Text
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Store game states by user session
-game_states: Dict[str, "GameState"] = {}
+# Print OPENAI_API_KEY from .env file
+openai_api_key = os.getenv('OPENAI_API_KEY')
 
+# Store game states by user session
+game_states = {}
+
+# Prompt template for GPT
 SYSTEM_PROMPT = """
 You are a game master for a Movie Guessing Game.
 
@@ -38,150 +42,127 @@ Please follow these rules:
 
 
 class GameState:
-    """Manages the state of a single game session."""
 
     def __init__(self):
         self.reset()
 
     def reset(self):
-        """Reset the game state to initial values."""
         self.stage = "start"
-        self.preferences: Dict[str, str] = {}
-        self.questions: List[Dict[str, Any]] = []
+        self.preferences = {}
+        self.questions = []
         self.index = 0
         self.score = 0
-        self.last_answer: Optional[str] = None
-
-
-def get_or_create_state(user_id: str) -> GameState:
-    """Get existing game state or create a new one."""
-    if user_id not in game_states:
-        game_states[user_id] = GameState()
-    return game_states[user_id]
-
-
-def generate_quiz(preferences: Dict[str, str]) -> Optional[List[Dict[str, Any]]]:
-    """Generate quiz questions using OpenAI API."""
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        return None
-
-    prompt = SYSTEM_PROMPT.format(
-        era=preferences["era"], difficulty=preferences["difficulty"], genre=preferences["genre"]
-    )
-
-    try:
-        client = openai.OpenAI(api_key=api_key)
-        response = client.chat.completions.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": prompt},
-                {"role": "user", "content": "Please generate the movie quiz."},
-            ],
-            temperature=0.8,
-            max_tokens=1500,
-        )
-        content = response.choices[0].message.content
-        return json.loads(content)
-    except Exception:
-        return None
+        self.last_answer = None
 
 
 @bt.chatbot("movie-guessing-game")
-def movie_guessing_game(
-    message: str, user_uuid: Optional[str] = None, conversation_uuid: Optional[str] = None
-) -> List[Any]:
-    """Movie guessing game chatbot."""
+def movie_guessing_game(message: str,
+              user_uuid: str = None,
+              conversation_uuid: str = None) -> list:
+    session_id = conversation_uuid or user_uuid or "default"
 
-    user_id = user_uuid or "default"
-    state = get_or_create_state(user_id)
+    # Initialize game state
+    if message == "start":
+        game_states[session_id] = GameState()
+    if session_id not in game_states:
+        game_states[session_id] = GameState()
+    state = game_states[session_id]
 
-    # Process user input
-    if message.lower() in ["start", "restart", "new game"]:
-        state.reset()
-        state.stage = "era"
-    elif message.startswith("era:"):
+    # Handle pill clicks
+    if message.startswith("era:"):
         state.preferences["era"] = message.replace("era:", "")
         state.stage = "difficulty"
     elif message.startswith("difficulty:"):
+        # Check if era is set
         if "era" not in state.preferences:
-            return [Text("❌ Please start from the beginning!"), Text("Type 'start' to begin the game properly.")]
+            return [
+                Text("❌ Please start from the beginning!"),
+                Text("Type 'start' to begin the game properly.")
+            ]
         state.preferences["difficulty"] = message.replace("difficulty:", "")
         state.stage = "genre"
     elif message.startswith("genre:"):
+        # Check if previous preferences are set
         if "era" not in state.preferences or "difficulty" not in state.preferences:
-            return [Text("❌ Please start from the beginning!"), Text("Type 'start' to begin the game properly.")]
+            return [
+                Text("❌ Please start from the beginning!"),
+                Text("Type 'start' to begin the game properly.")
+            ]
         state.preferences["genre"] = message.replace("genre:", "")
         state.stage = "generate"
-    elif state.questions and state.stage == "question":
-        if message in [opt for q in state.questions for opt in q["options"]]:
-            state.last_answer = message
+    elif state.questions and state.stage == "question" and message in [
+            opt for q in state.questions for opt in q["options"]
+    ]:
+        state.last_answer = message
 
-    # Handle game flow
+    # Start game flow
     if state.stage == "start":
         state.reset()
         state.stage = "era"
         return [
-            Text("🎬 Welcome to Movie Guessing Game!"),
-            Text("Can you guess the movie from a hilariously bad description?"),
-            Text(""),
-            Text("Let's set up your game preferences..."),
             Text("🎬 What kind of movie era are you into?"),
-            Pills(
-                pills=[
-                    Pill("All", "era:All"),
-                    Pill("Classics", "era:Classics"),
-                    Pill("2000s", "era:2000s"),
-                    Pill("2010s", "era:2010s"),
-                    Pill("Recent", "era:Recent"),
-                ]
-            ),
+            Pills(pills=[
+                Pill("All", "era:All"),
+                Pill("Classics", "era:Classics"),
+                Pill("2000s", "era:2000s"),
+                Pill("2010s", "era:2010s"),
+                Pill("Recent", "era:Recent")
+            ])
         ]
 
     elif state.stage == "difficulty":
         return [
             Text(f"You picked era: {state.preferences['era']}"),
             Text("🧠 Choose difficulty:"),
-            Pills(
-                pills=[
-                    Pill("All", "difficulty:All"),
-                    Pill("Easy", "difficulty:Easy"),
-                    Pill("Medium", "difficulty:Medium"),
-                    Pill("Hard", "difficulty:Hard"),
-                ]
-            ),
+            Pills(pills=[
+                Pill("All", "difficulty:All"),
+                Pill("Easy", "difficulty:Easy"),
+                Pill("Medium", "difficulty:Medium"),
+                Pill("Hard", "difficulty:Hard")
+            ])
         ]
 
     elif state.stage == "genre":
         return [
             Text(f"Difficulty: {state.preferences['difficulty']}"),
             Text("🎭 Pick a genre:"),
-            Pills(
-                pills=[
-                    Pill("All", "genre:All"),
-                    Pill("Action", "genre:Action"),
-                    Pill("Comedy", "genre:Comedy"),
-                    Pill("Drama", "genre:Drama"),
-                    Pill("Sci-Fi", "genre:Sci-Fi"),
-                    Pill("Horror", "genre:Horror"),
-                    Pill("Romance", "genre:Romance"),
-                ]
-            ),
+            Pills(pills=[
+                Pill("All", "genre:All"),
+                Pill("Action", "genre:Action"),
+                Pill("Comedy", "genre:Comedy"),
+                Pill("Drama", "genre:Drama"),
+                Pill("Sci-Fi", "genre:Sci-Fi"),
+                Pill("Horror", "genre:Horror"),
+                Pill("Romance", "genre:Romance")
+            ])
         ]
 
     elif state.stage == "generate":
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            return [Text("❌ OpenAI API key not configured."), Text("Please set OPENAI_API_KEY in your environment.")]
-
-        questions = generate_quiz(state.preferences)
-        if not questions:
+        prompt = SYSTEM_PROMPT.format(
+            era=state.preferences["era"],
+            difficulty=state.preferences["difficulty"],
+            genre=state.preferences["genre"])
+        try:
+            client = openai.OpenAI(api_key=os.environ['OPENAI_API_KEY'])
+            response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[{
+                    "role": "system",
+                    "content": prompt
+                }, {
+                    "role": "user",
+                    "content": "Please generate the movie quiz."
+                }],
+                temperature=0.8,
+                max_tokens=1500,
+            )
+            content = response.choices[0].message.content
+            state.questions = json.loads(content)
+            state.index = 0
+            state.score = 0
+            state.stage = "question"
+        except Exception:
             return [Text("❌ Failed to generate quiz. Please try again.")]
-
-        state.questions = questions
-        state.index = 0
-        state.score = 0
-        state.stage = "question"
 
     # Handle game questions
     if state.stage == "question":
@@ -193,51 +174,46 @@ def movie_guessing_game(
                 state.score += 1
                 components.append(Text("✅ Correct!"))
             else:
-                components.append(Text(f"❌ Wrong! Correct answer was: {correct_answer}"))
+                components.append(
+                    Text(f"❌ Wrong! Correct answer was: {correct_answer}"))
             state.last_answer = None
 
         # End of quiz
         if state.index >= len(state.questions):
             final_score = state.score
             state.stage = "complete"
-            components.append(Text(f"🎬 Game Over! Final Score: {final_score}/{len(state.questions)}"))
-            if final_score == len(state.questions):
-                components.append(Text("🏆 Perfect Score! You're a movie genius!"))
-            elif final_score >= len(state.questions) * 0.8:
-                components.append(Text("🌟 Great job! You really know your movies!"))
-            elif final_score >= len(state.questions) * 0.6:
-                components.append(Text("👍 Good effort! Not bad at all!"))
-            else:
-                components.append(Text("😅 Nice try! Watch more movies!"))
-
-            components.append(Text(""))
-            components.append(Pills(pills=[Pill("🎮 Play Again", "start")]))
+            components.append(
+                Text(f"🏁 Game Over! You scored {final_score}/5 🎉"))
+            components.append(Text("Type 'start' to play again!"))
             return components
 
-        # Show next question
-        current_question = state.questions[state.index]
-        components.append(Text(f"📽️ Question {state.index + 1}/{len(state.questions)}"))
-        components.append(Text(f"Score: {state.score}/{state.index}"))
-        components.append(Text(""))
-        components.append(Text(current_question["question"]))
-        components.append(Pills(pills=[Pill(opt, opt) for opt in current_question["options"]]))
+        # Ask next question
+        q = state.questions[state.index]
         state.index += 1
 
+        components.append(Text(f"🎲 Q{state.index}: {q['question']}"))
+        components.append(Pills(pills=[Pill(opt, opt)
+                                       for opt in q["options"]]))
         return components
 
-    # Default response
-    return [Text("👋 Welcome to Movie Guessing Game!"), Text("Type 'start' to begin a new game.")]
+    # Final screen
+    if state.stage == "complete":
+        return [Text("Type 'start' to play again!")]
+
+    return [Text("Type 'start' to begin the Movie Guessing Game! 🎬")]
 
 
 @movie_guessing_game.config
 def get_config():
     return bt.BotConfig(
         name="movie-guessing-game",
-        display_name="Movie Quiz Bot",
-        url=os.getenv("BOT_URL", "http://localhost:5002"),
-        icon_url="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400",
+        display_name="Movie Guessing Game",
+        url="http://localhost:5000",
+        icon_url=
+        "https://iafqwfegdftjthhbccyt.supabase.co/storage/v1/object/sign/bubble-tea/movie_bot.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81MDMyMzM5NS1hZDExLTRkYzEtODdkNC0yMjMwM2JkNjBhMzEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJidWJibGUtdGVhL21vdmllX2JvdC5qcGciLCJpYXQiOjE3NTQwNTI5OTEsImV4cCI6MTc4NTU4ODk5MX0.d9C45AOhstuj0ZJF6TbDjxJY-TauZZkdfZs8toasrbI",
         is_streaming=False,
-        initial_text="🎬 Ready for a movie challenge? Type 'start' to begin the ultimate movie guessing game!",
+        initial_text=
+        "🎬 Welcome to the Movie Guessing Game! I'll describe movie plots badly, and you try to guess the movie! Type 'start' to begin!",
         description="""
 # Movie Guessing Game Bot 🎬
 
