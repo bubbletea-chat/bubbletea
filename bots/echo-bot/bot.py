@@ -19,7 +19,7 @@ def echo_bot(message: str):
 def get_config():
     return bt.BotConfig(
         # Required fields
-        name="echo-simple",
+        name="echo-bot",
         url="localhost:5000",
         is_streaming=False,
 

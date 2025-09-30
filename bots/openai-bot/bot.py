@@ -24,7 +24,7 @@ async def process_message_async(message: str,
     # Ensure we have a thread_id
     if not thread_id:
         thread_id = llm.create_thread(user_uuid)
-    
+
     # Get the assistant response with the message
     response = llm.get_assistant_response(thread_id, message)
 
@@ -79,7 +79,7 @@ def gpt_assistant(message: str,
     if not thread_id:
         llm = LLM(model="gpt-4", llm_provider="openai")
         thread_id = llm.create_thread(user_uuid)
-    
+
     responses = [
         bt.Text(
             "Processing your message... You'll receive a response shortly!"),
@@ -99,7 +99,7 @@ def get_config():
         is_streaming=False,  # Useful for ChatGPT-like typing behavior
 
         # Metadata for discovery and display
-        display_name="ChatGPT Thread Bot",  # Max 20 characters
+        display_name="ChatGPT Bot",  # Max 20 characters
         subtitle="Chat in threads with AI",  # Max 30 characters
         icon_url=
         "https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg",

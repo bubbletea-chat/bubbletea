@@ -44,7 +44,7 @@ def claude_assistant(message: str):
 def get_config():
     return bt.BotConfig(
         # Required fields
-        name="claude-simple",
+        name="claude-bot",
         url=os.getenv("BOT_URL", "localhost:5000"),
         is_streaming=False,
 

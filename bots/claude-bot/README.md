@@ -1,94 +1,90 @@
-# Claude Assistant Bot
+# Claude Bot
 
-## Description
-An advanced AI assistant powered by Anthropic's Claude, offering intelligent conversations, complex reasoning, and helpful assistance across a wide range of topics. This bot provides access to Claude's capabilities including analysis, creative writing, coding help, and general knowledge.
+## What you'll get
 
-## Features
-- Advanced conversational AI with Claude
-- Context-aware responses
-- Multi-turn conversations with memory
-- Code generation and debugging assistance
-- Creative writing and content generation
-- Research and analysis capabilities
-- Markdown formatting support
-- Streaming responses for better UX
+### Description
+A simple yet powerful AI assistant powered by Anthropic's Claude 3.5 Sonnet, offering intelligent conversations and helpful assistance across a wide range of topics. Perfect for quick questions, brainstorming, writing help, and coding assistance.
 
-## Setup Instructions
-1. Clone this repository
-2. Navigate to the bot folder: `cd claude_bot`
-3. Install dependencies: `pip install -r requirements.txt`
-4. Copy environment variables: `cp .env.example .env`
-5. Add your Anthropic API key to `.env`
-6. Run the bot: `python bot.py`
+### Live bot
+🔗 **Try it now:** [Claude Bot on BubbleTea](https://bubbletea.chat/bot/claude-bot)
 
-## Configuration
-### Getting an Anthropic API Key
-1. Sign up at [console.anthropic.com](https://console.anthropic.com)
-2. Navigate to API keys section
-3. Create a new API key
-4. Add it to your `.env` file
+### Example conversations
+- Coming soon - example conversation links will be added here
 
-### Model Selection
-- Default: Claude 3 Sonnet (balanced performance)
-- Options: Claude 3 Opus (most capable), Claude 3 Haiku (fastest)
-- Configure in `.env` with CLAUDE_MODEL variable
+### Features
+- **Natural Language Conversations** - Powered by Claude 3.5 Sonnet for intelligent responses
+- **Quick Responses** - Direct integration with Anthropic API for fast replies
+- **Rich Markdown Support** - Formatted responses with markdown rendering
+- **Multi-turn Dialog** - Great for brainstorming and extended conversations
+- **Code Assistance** - Help with programming questions and debugging
+- **Creative Writing** - Support for content generation and editing
+- **Simple Setup** - Minimal configuration required
+- **Error Handling** - Graceful fallbacks for API issues
 
-## Commands
-- Send any message to start a conversation
-- `/new` - Start a new conversation thread
-- `/help` - Display available commands
-- `/model` - Check current model
-- `/clear` - Clear conversation history
+## How to build it
 
-## Use Cases
-- **Coding Assistance**: Debug code, generate functions, explain algorithms
-- **Writing Help**: Essays, emails, creative content, documentation
-- **Research**: Summarize articles, analyze data, answer questions
-- **Learning**: Explain concepts, provide tutorials, answer questions
-- **Problem Solving**: Logic puzzles, math problems, strategic planning
-- **Creative Tasks**: Story writing, brainstorming, idea generation
+### Code review
 
-### Example Interactions
-- "Help me write a Python function to sort a list"
-- "Explain quantum computing in simple terms"
-- "Review this code for potential bugs"
-- "Write a professional email declining a meeting"
-- "What are the main causes of climate change?"
-- "Help me plan a 7-day trip to Japan"
+1. **Main Components:**
+   - `claude_assistant()` - Main chatbot handler decorated with @bt.chatbot
+   - `get_config()` - Bot configuration with metadata and display settings
+   - Direct Anthropic client integration for simplicity
 
-## Technical Details
-- **AI Model**: Anthropic Claude (configurable version)
-- **Context Window**: Up to 100k tokens
-- **Response Format**: Markdown with code highlighting
-- **Streaming**: Real-time response streaming
-- **Rate Limiting**: Handled automatically
+2. **Key Technologies:**
+   - BubbleTea Chat SDK for bot framework
+   - Anthropic Python SDK for Claude API
+   - Environment variables for secure API key management
+   - Markdown component for rich text responses
 
-### Best Practices
-- Be specific in your requests for better responses
-- Use clear, concise language
-- Provide context when asking follow-up questions
-- Use code blocks for code-related queries
-- Break complex tasks into smaller steps
+3. **Architecture Flow:**
+   - User sends message → Bot receives via webhook
+   - Message sent directly to Claude API
+   - Response formatted as Markdown component
+   - Returned immediately to user (no async needed)
 
-## Deployment Options
-- **Local**: Run directly with Python
-- **Docker**: Container deployment supported
-- **Cloud**: Deploy to any Python-supporting platform
-- **Serverless**: AWS Lambda, Google Cloud Functions
+4. **Environment Variables:**
+   ```
+   ANTHROPIC_API_KEY=your_anthropic_api_key
+   BOT_URL=your_bot_url (optional, defaults to localhost:5000)
+   ```
 
-### Advanced Features
-- Custom system prompts
-- Temperature and parameter tuning
-- Response length control
-- Token usage tracking
-- Conversation export
+### Deployment
 
-### Limitations
-- No real-time information or web browsing
-- Cannot execute code (only generate)
-- Knowledge cutoff based on training data
-- Rate limits apply based on API tier
+1. **Prerequisites:**
+   - Python 3.8+
+   - Google Cloud Platform account
+   - Anthropic API key
 
+2. **Installation:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Local Testing:**
+   ```bash
+   # Set environment variable
+   export ANTHROPIC_API_KEY="your_key"
+
+   # Run the bot
+   python bot.py
+   ```
+
+4. **Configuration:**
+   - Set ANTHROPIC_API_KEY environment variable
+   - Bot runs on port 8080 by default
+   - Update webhook URL in BubbleTea dashboard
+
+## Deployed
+
+✅ **Status:** Successfully deployed on Google Cloud Run
+
+🌐 **Platform:** Google Cloud Platform (GCP)
+
+📍 **Region:** Configurable (default: us-central1)
+
+🔗 **Live URL:** Available on [BubbleTea Chat](https://bubbletea.chat/bot/claude-simple)
+
+🚀 **Port:** 8080 (Cloud Run default)
 ## Support
 For Anthropic API documentation, visit [docs.anthropic.com](https://docs.anthropic.com)
 For BubbleTea platform issues: [github.com/bubbletea-chat/bubbletea](https://github.com/bubbletea-chat/bubbletea)
