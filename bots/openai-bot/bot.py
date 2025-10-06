@@ -32,6 +32,23 @@ async def process_message_async(message: str,
     # Get the assistant response with the message
     response = llm.get_assistant_response(thread_id, message)
     
+    # Fix for LiteLLM bug: it returns the wrong message from thread
+    # We need to get the actual latest assistant response
+    if response and thread_id:
+        try:
+            from litellm.assistants.main import get_messages
+            messages = get_messages(thread_id=thread_id, custom_llm_provider="openai")
+            if hasattr(messages, 'data') and messages.data:
+                # Messages are in reverse order (newest first)
+                for msg in messages.data:
+                    if msg.role == "assistant":
+                        # Get the FIRST assistant message (which is the newest)
+                        if msg.content and len(msg.content) > 0:
+                            response = msg.content[0].text.value
+                            break
+        except:
+            pass  # Use the original response if fix fails
+    
     # If assistant response fails, fallback to regular completion with context
     if not response:
         print(f"Assistant API failed for thread {thread_id}, using direct completion with context")
