@@ -19,7 +19,7 @@ async def process_message_async(message: str,
                                 thread_id: str = None,
                                 images: List[bt.ImageInput] = None):
 
-    llm = LLM(model="gpt-4", llm_provider="openai")
+    llm = LLM(model="gpt-4")  # Don't pass llm_provider, causes issues
 
     # Ensure we have a thread_id
     if not thread_id:
@@ -27,6 +27,22 @@ async def process_message_async(message: str,
 
     # Get the assistant response with the message
     response = llm.get_assistant_response(thread_id, message)
+    
+    # If assistant response fails, fallback to regular completion
+    if not response:
+        print(f"Assistant API failed for thread {thread_id}, using direct completion")
+        # Try to maintain context by adding message to thread first
+        try:
+            # Add message to thread for context even if assistant fails
+            llm.add_user_message(thread_id, message)
+        except:
+            pass
+        # Use complete but still maintain the thread for next messages
+        response = llm.complete(message)
+    
+    # Ensure we have a response
+    if not response:
+        response = "I'm sorry, I couldn't process your message. Please try again."
 
     # Create the message component
     result = bt.Markdown(response)
@@ -68,17 +84,20 @@ def gpt_assistant(message: str,
     # Start async processing in background
 
     print(f"Processing ChatGPT message for conversation: {conversation_uuid}")
+    
+    # Create thread_id if needed BEFORE passing to async task
+    # This ensures both main function and async task use the SAME thread
+    if not thread_id:
+        llm = LLM(model="gpt-4")
+        thread_id = llm.create_thread(user_uuid)
+        print(f"Created thread for conversation: {thread_id}")
 
+    # Now pass the thread_id to async task
     asyncio.create_task(
         process_message_async(message=message,
                               conversation_uuid=conversation_uuid,
                               user_uuid=user_uuid,
                               thread_id=thread_id))
-
-    # Create thread_id if needed for response tracking
-    if not thread_id:
-        llm = LLM(model="gpt-4", llm_provider="openai")
-        thread_id = llm.create_thread(user_uuid)
 
     responses = [
         bt.Text(
