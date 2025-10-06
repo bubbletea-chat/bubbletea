@@ -29,9 +29,17 @@ Bubbletea is a frontend platform for AI agents and chatbots. You build the bot l
 
 3. **Develop your bot** following the structure guidelines below
 
-4. **Submit a Pull Request** against the master branch
+4. **Test your bot locally**
+   ```bash
+   cd your-bot-name
+   pip install -r requirements.txt
+   python bot.py
+   # Bot will run on http://localhost:8000
+   ```
 
-5. **Get reviewed and merged** - Your bot will be live on Bubbletea!
+5. **Submit a Pull Request** against the master branch
+
+6. **Get reviewed and merged** - Your bot will be live on Bubbletea!
 
 ## 📚 Documentation & Resources
 
@@ -45,7 +53,7 @@ Bubbletea is a frontend platform for AI agents and chatbots. You build the bot l
 Each bot MUST have its own folder with the following structure:
 
 ```
-bots-public/
+bots/
 ├── your-bot-name/              # Folder name = bot name (lowercase, hyphenated)
 │   ├── README.md               # REQUIRED: Bot documentation
 │   ├── bot.py                  # REQUIRED: Main bot code
@@ -53,18 +61,6 @@ bots-public/
 │   ├── .env.example            # REQUIRED: Example environment variables
 │   └── tests/                  # OPTIONAL: Test files
 │       └── test_bot.py
-```
-
-### Example: Weather Bot Structure
-
-```
-weather-bot/
-├── README.md                   # Explains what the bot does
-├── weather_bot.py              # Main bot implementation
-├── requirements.txt            # Lists: bubbletea-chat, requests, python-dotenv
-├── .env.example                # Contains: WEATHER_API_KEY=your_key_here
-└── tests/
-    └── test_weather.py        # Unit tests
 ```
 
 ## 📝 Bot Submission Requirements
@@ -75,6 +71,7 @@ weather-bot/
 - **Use hyphens for spaces**: `weather-bot` ✅ `weather_bot` ❌
 - **Be descriptive**: `recipe-finder` ✅ `bot1` ❌
 - **Match your bot's registered name**: Folder name should match the name in BotConfig
+- **No special characters**: Only letters, numbers, and hyphens allowed
 
 ### 2. Required Files
 
@@ -103,10 +100,11 @@ Clear explanation of what your bot does and its key features.
 
 #### bot.py (or main.py)
 Your main bot file should:
-- import bubbletea_chat
+- Import bubbletea_chat: `import bubbletea_chat as bt`
 - Define @bt.config() with proper bot configuration
-- Implement @bt.chatbot() function
-- Include `if __name__ == "__main__":` block
+- Implement @bt.chatbot() function for handling messages
+- Include `if __name__ == "__main__":` block to run the server
+- Handle environment variables with python-dotenv when needed
 
 #### requirements.txt
 List all dependencies with versions:
@@ -138,16 +136,21 @@ WEATHER_API_KEY=your_weather_api_key_here
 
 Before submitting your PR, ensure:
 
-- [ ] Bot responds to `/chat` endpoint
+- [ ] Bot responds to `/chat` endpoint correctly
 - [ ] Bot provides `/config` endpoint (if using @bt.config decorator)
-- [ ] All environment variables are documented
-- [ ] No API keys or secrets in code
-- [ ] requirements.txt includes all dependencies
+- [ ] All environment variables are documented in .env.example
+- [ ] No API keys or secrets in code (use .env file)
+- [ ] requirements.txt includes all dependencies with versions
 - [ ] README has clear setup instructions
-- [ ] Code follows Python conventions
+- [ ] Code follows Python conventions (PEP 8)
+- [ ] Bot runs without errors: `python bot.py`
+- [ ] Test with sample inputs to verify functionality
+- [ ] Remove any test files or debug code before submission
 
 
-### Replit Template
+### Deployment Templates
+
+#### Replit Configuration
 ```python
 # .replit file
 run = "python bot.py"
@@ -156,16 +159,27 @@ language = "python3"
 [deployment]
 run = ["python", "bot.py"]
 deploymentTarget = "cloudrun"
+
+[env]
+PYTHON_VERSION = "3.11"
 ```
 
-### Docker Template
+#### Docker Template
 ```dockerfile
 FROM python:3.11-slim
 WORKDIR /app
+
+# Install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy bot files
 COPY . .
+
+# Expose the default Bubbletea port
 EXPOSE 8000
+
+# Run the bot
 CMD ["python", "bot.py"]
 ```
 
@@ -174,49 +188,70 @@ CMD ["python", "bot.py"]
 - Use platform-specific secrets for production (Replit Secrets, Docker env, etc.)
 - Never commit actual API keys
 
-## 🎯 Bot Examples to Follow
+## 🎯 Example Bots in This Repository
 
-Look at these well-structured bots for inspiration:
+Explore these existing bots to learn different implementation patterns:
 
-### Simple Structure (echo-bot/)
+### 🔧 Available Example Bots
+
+1. **echo-bot** - Simple echo bot demonstrating basic structure
+2. **openai-bot** - ChatGPT-powered conversational AI bot
+3. **claude-bot** - Anthropic Claude integration example
+4. **gemini-bot** - Google Gemini AI bot implementation
+5. **morning-bot** - Daily greeting and weather bot with scheduling
+6. **movie-game-bot** - Interactive movie guessing game
+7. **photo-to-video-bot** - Media processing bot for image to video conversion
+8. **restaurant-reservation-bot** - Booking system demonstration
+9. **bt-components-showcase-bot** - Showcases all Bubbletea UI components
+10. **bt-developers-help-bot** - Developer assistance and documentation bot
+
+### Bot Structure Examples
+
+#### Simple Structure (echo-bot/)
 ```
 echo-bot/
 ├── README.md
-├── echo_bot.py
+├── bot.py
 ├── requirements.txt
-└── .env.example
+└── echo-bot-demo.gif    # Optional: Demo screenshot/video
 ```
 
-### Advanced Structure (ai-assistant/)
+#### Standard Structure (openai-bot/)
 ```
-ai-assistant/
+openai-bot/
 ├── README.md
-├── main.py
+├── bot.py
 ├── requirements.txt
-├── .env.example
+├── openai-bot-demo.gif
+└── tests/               # Optional: Test files
+    └── test_bot.py
+```
+
+#### Advanced Structure (morning-bot/)
+```
+morning-bot/
+├── README.md
+├── bot.py
+├── requirements.txt
 ├── config/
 │   └── settings.py
 ├── utils/
-│   ├── llm_helper.py
-│   └── validators.py
-├── deploy/
-│   ├── README.md
-│   ├── Dockerfile
-│   └── docker-compose.yml
+│   └── helpers.py
 └── tests/
-    ├── test_main.py
-    └── test_utils.py
+    └── test_bot.py
 ```
 
 ## 🚫 What NOT to Include
 
-- ❌ API keys or secrets
+- ❌ API keys or secrets (use .env files)
 - ❌ User data or logs
 - ❌ `__pycache__` or `.pyc` files
 - ❌ Virtual environment folders (`venv/`, `env/`)
 - ❌ IDE configuration (`.vscode/`, `.idea/`)
-- ❌ Large files (models, datasets)
+- ❌ Large files (models, datasets > 10MB)
 - ❌ Copyrighted content without permission
+- ❌ Test files with hardcoded credentials
+- ❌ Temporary or backup files (`.tmp`, `.bak`, `~`)
 
 ## 🤝 Pull Request Process
 
@@ -234,8 +269,10 @@ ai-assistant/
 ## 🆘 Getting Help
 
 - **SDK Documentation**: [bubbletea.chat/docs](https://bubbletea.chat/docs)
+- **Python Package**: [PyPI - bubbletea-chat](https://pypi.org/project/bubbletea-chat/)
 - **BubbleTea Documentation & Issues**: [github.com/bubbletea-chat/bubbletea](https://github.com/bubbletea-chat/bubbletea)
 - **Developer Dashboard**: [bubbletea.chat/developer](https://bubbletea.chat/developer)
+- **Example Bots**: Check the existing bots in this repository for implementation patterns
 
 ## 📄 License
 
