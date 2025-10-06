@@ -13,13 +13,17 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
+# Store conversation history for context when using fallback
+# Key: thread_id, Value: list of messages
+conversation_history = {}
+
 async def process_message_async(message: str,
                                 conversation_uuid: str,
                                 user_uuid: str = None,
                                 thread_id: str = None,
                                 images: List[bt.ImageInput] = None):
 
-    llm = LLM(model="gpt-4")  # Don't pass llm_provider, causes issues
+    llm = LLM(model="gpt-4", llm_provider="openai")  # Need explicit provider for Assistant API
 
     # Ensure we have a thread_id
     if not thread_id:
@@ -28,17 +32,36 @@ async def process_message_async(message: str,
     # Get the assistant response with the message
     response = llm.get_assistant_response(thread_id, message)
     
-    # If assistant response fails, fallback to regular completion
+    # If assistant response fails, fallback to regular completion with context
     if not response:
-        print(f"Assistant API failed for thread {thread_id}, using direct completion")
-        # Try to maintain context by adding message to thread first
-        try:
-            # Add message to thread for context even if assistant fails
-            llm.add_user_message(thread_id, message)
-        except:
-            pass
-        # Use complete but still maintain the thread for next messages
-        response = llm.complete(message)
+        print(f"Assistant API failed for thread {thread_id}, using direct completion with context")
+        
+        # Maintain conversation history for this thread
+        if thread_id not in conversation_history:
+            conversation_history[thread_id] = []
+        
+        # Add current message to history
+        conversation_history[thread_id].append({"role": "user", "content": message})
+        
+        # Build context from conversation history
+        messages = conversation_history[thread_id][-10:]  # Keep last 10 messages for context
+        
+        # Use completion with full message history
+        if len(messages) > 1:
+            # Create a context-aware prompt
+            context_prompt = "Previous conversation:\n"
+            for msg in messages[:-1]:  # All except current message
+                role = "User" if msg["role"] == "user" else "Assistant"
+                context_prompt += f"{role}: {msg['content']}\n"
+            context_prompt += f"\nUser: {message}\nAssistant:"
+            response = llm.complete(context_prompt)
+        else:
+            # First message, no context needed
+            response = llm.complete(message)
+        
+        # Store the response in history for next time
+        if response:
+            conversation_history[thread_id].append({"role": "assistant", "content": response})
     
     # Ensure we have a response
     if not response:
@@ -88,7 +111,7 @@ def gpt_assistant(message: str,
     # Create thread_id if needed BEFORE passing to async task
     # This ensures both main function and async task use the SAME thread
     if not thread_id:
-        llm = LLM(model="gpt-4")
+        llm = LLM(model="gpt-4", llm_provider="openai")
         thread_id = llm.create_thread(user_uuid)
         print(f"Created thread for conversation: {thread_id}")
 
