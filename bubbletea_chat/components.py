@@ -133,8 +133,19 @@ class Error(BaseModel):
         super().__init__(title=title, description=description, code=code)
 
 
+class PaymentRequest(BaseModel):
+    """Payment request component"""
+
+    type: Literal["payment_request"] = "payment_request"
+    amount: float
+    note: Optional[str] = None
+
+    def __init__(self, amount: float, note: Optional[str] = None):
+        super().__init__(amount=amount, note=note)
+
+
 Component = Union[
-    Text, Image, Markdown, Card, Cards, Done, Pill, Pills, Video, Block, Error
+    Text, Image, Markdown, Card, Cards, Done, Pill, Pills, Video, Block, Error, PaymentRequest
 ]
 
 

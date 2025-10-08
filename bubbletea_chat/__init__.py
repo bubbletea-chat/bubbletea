@@ -42,6 +42,7 @@ from .components import (
     Video,
     Block,
     Error,
+    PaymentRequest,
     BaseComponent,
 )
 
@@ -68,6 +69,7 @@ __all__ = [
     "Video",
     "Block",
     "Error",
+    "PaymentRequest",
     "BaseComponent",
     "chatbot",
     "config",
