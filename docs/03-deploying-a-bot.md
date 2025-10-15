@@ -2,7 +2,7 @@
 
 ## Table of Contents
 - [Ngrok - Local Development Made Easy](#ngrok---local-development-made-easy)
-- [Replit - Instant Cloud Hosting](#replit---instant-cloud-hosting)
+- [Cloud Run - Production Deployment with CI/CD](#cloud-run---production-deployment-with-cicd)
 - [CORS Support - Cross-Origin Configuration](#cors-support---cross-origin-configuration)
 - [Testing Your Bot](#testing-your-bot)
 
@@ -25,21 +25,73 @@ ngrok http 8000
 # https://abc123.ngrok.io
 ```
 
-## Replit - Instant Cloud Hosting
+## Cloud Run - Production Deployment with CI/CD
 
-Replit provides free, always-on hosting for your bot with zero configuration. Just write your code in the browser and click Run. No server setup, no deployment scripts, no DevOps knowledge required. Your bot gets a permanent URL and stays online 24/7:
+Bots are automatically deployed to Google Cloud Run using GitHub Actions for continuous deployment. When you push changes to the main branch, your bots are built, containerized, and deployed automatically. This provides production-grade hosting with serverless scaling, SSL certificates, and zero DevOps overhead:
 
+### Automatic Deployment Setup
+
+The repository includes GitHub Actions workflows that handle deployment automatically:
+
+**Deployment Process:**
+1. Add your bot to the `bots/` folder with `bot.py` and `requirements.txt`
+2. Push changes to the main branch
+3. GitHub Actions detects changes in `bots/**` directory
+4. Automatically builds Docker image using `bots/Dockerfile`
+5. Pushes image to Google Artifact Registry
+6. Deploys to Cloud Run with all required secrets
+7. Sends Slack notification on successful deployment
+
+**Deployment Files:**
+- `.github/workflows/deploy-bots.yml` - GitHub Actions workflow for deployment
+- `.github/scripts/deploy-and-notify.sh` - Deployment and notification script
+- `bots/Dockerfile` - Docker configuration for containerizing bots
+
+### Bot Structure
+
+Each bot in the `bots/` folder should have:
 ```bash
-# 1. Fork the Bubbletea template on Replit
-# 2. Add your bot code to main.py
-# 3. Click "Run"
-# 4. Your bot URL: https://botname.username.repl.co
-
-# Replit automatically handles:
-# - SSL certificates
-# - Always-on hosting
-# - Environment variables
+bots/
+  your-bot-name/
+    bot.py              # Main bot code
+    requirements.txt    # Python dependencies
+    config.py          # Optional configuration
+    README.md          # Bot documentation
 ```
+
+### Deployment Features
+
+Cloud Run deployment provides:
+- **Automatic Scaling**: Scales from 0 to thousands of instances
+- **SSL Certificates**: Automatic HTTPS for all bots
+- **Environment Secrets**: All GCP secrets automatically injected
+- **Zero Downtime**: Rolling updates with health checks
+- **Custom Domains**: Support for custom domain mapping
+- **Cost Efficient**: Pay only for actual usage
+
+### Manual Deployment
+
+To manually trigger deployment:
+```bash
+# Via GitHub Actions UI
+# 1. Go to Actions tab in GitHub
+# 2. Select "Deploy Bots to Cloud Run"
+# 3. Click "Run workflow"
+# 4. Select branch and run
+
+# The workflow will:
+# - Detect all bots in bots/ folder
+# - Build and deploy changed bots
+# - Output deployment URLs
+```
+
+### Monitoring Deployments
+
+Check deployment status:
+- GitHub Actions tab shows build and deployment logs
+- Slack notifications (if configured) report deployment success/failure
+- Cloud Run console shows service status and logs
+- Each bot gets a unique URL: `https://bot-name-[hash].run.app`
 
 ## CORS Support - Cross-Origin Configuration
 

@@ -51,9 +51,9 @@ if __name__ == "__main__":
     bt.run_server(echo_bot, port=8000, host="0.0.0.0")
 ```
 
-#### Step 2: Deploy with ngrok or Replit
+#### Step 2: Deploy with ngrok or Cloud Run
 
-Now make your bot accessible from the internet. Choose either ngrok for local development or Replit for instant cloud hosting. Both options are free and take less than a minute to set up.
+Now make your bot accessible from the internet. Choose either ngrok for local development or Cloud Run for production deployment with automatic CI/CD.
 
 **Option A: Deploy with ngrok (Local Development)**
 
@@ -68,16 +68,16 @@ ngrok http 8000
 # Your bot URL will be: https://abc123.ngrok-free.app
 ```
 
-**Option B: Deploy on Replit (Cloud Hosting)**
+**Option B: Deploy on Cloud Run (Production)**
 
-Replit provides free, always-on hosting with zero configuration:
+Bots are automatically deployed to Google Cloud Run when you push changes:
 
-- Go to [replit.com](https://replit.com) and create a new Python repl
-- Copy your bot code into main.py
-- Click "Run" to start your bot
-- Get instant URL: https://your-bot.username.repl.co
-- Free hosting, SSL included, always online
-- Click "Deploy" button and ensure deployment type is set to "Public"
+- Add your bot to the `bots/` folder with `bot.py` and `requirements.txt`
+- Push changes to the main branch
+- GitHub Actions automatically builds and deploys your bot to Cloud Run
+- Your bot gets a production URL: https://your-bot-abc123.run.app
+- Automatic deployment, SSL included, serverless scaling
+- Check `.github/workflows/` for deployment configuration
 
 #### Step 3: Register Your Bot & Access Everywhere
 
