@@ -37,7 +37,7 @@ Bubbletea is a frontend platform for AI agents and chatbots. You build the bot l
    # Bot will run on http://localhost:8000
    ```
 
-5. **Submit a Pull Request** against the master branch
+5. **Submit a Pull Request** against the main branch
 
 6. **Get reviewed and merged** - Your bot will be live on Bubbletea!
 
@@ -187,6 +187,43 @@ CMD ["python", "bot.py"]
 - Use `.env` for local development
 - Use platform-specific secrets for production (Replit Secrets, Docker env, etc.)
 - Never commit actual API keys
+
+## ⚙️ Auto-deploy on merge (GCP)
+
+When a bot is merged to `main`, this repository runs an automated workflow that builds and deploys changed bots to Google Cloud Run. To make deployments secure and reliable, runtime environment variables must be stored in Google Cloud Secret Manager.
+
+Key points:
+
+- The workflow looks for changes under the `bots/` folder and deploys only the bots that changed.
+- For every environment variable listed in a bot's `.env.example`, you must create a Secret Manager secret in the form:
+
+   <bot-folder>-<ENV_VAR>
+
+   Example: if your bot folder is `openai-bot` and `.env.example` contains `OPENAI_API_KEY`, create a secret named `openai-bot-OPENAI_API_KEY`.
+
+- The CI deployer requires these GitHub repository secrets to be configured:
+  - `GCP_SA_KEY` — JSON service account key with permissions to deploy and access secrets
+  - `GCP_PROJECT` — Google Cloud project id
+  - `GCP_REGION` — Cloud Run region (e.g., `us-central1`)
+
+Quick gcloud commands to create a secret and grant access to the CI/service account:
+
+```bash
+# Create a secret
+gcloud secrets create openai-bot-OPENAI_API_KEY --replication-policy="automatic"
+
+# Add value
+echo -n "sk-..." | gcloud secrets versions add openai-bot-OPENAI_API_KEY --data-file=-
+
+# Grant the CI service account access to read the secret
+gcloud secrets add-iam-policy-binding openai-bot-OPENAI_API_KEY \
+   --member="serviceAccount:my-ci-sa@my-project.iam.gserviceaccount.com" \
+   --role="roles/secretmanager.secretAccessor"
+```
+
+If a required secret is missing at merge time, the workflow will fail and block the deployment — this is intentional to avoid running bots without required credentials.
+
+If you want help creating required secrets for your bot or want me to add a template secret creation script, I can add that to the repo.
 
 ## 🎯 Example Bots in This Repository
 
